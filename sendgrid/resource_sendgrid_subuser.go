@@ -68,7 +68,6 @@ func resourceSendgridSubuser() *schema.Resource {
 			"disabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
 				Computed: true,
 			},
 			"signup_session_token": {

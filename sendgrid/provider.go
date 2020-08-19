@@ -28,6 +28,7 @@ func Provider() *schema.Provider {
 			"api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("SENDGRID_API_KEY", nil),
 			},
 			"host": {
