@@ -26,6 +26,8 @@ $ make testacc
 
 The documentation is created thank's to a fork of https://github.com/terraform-providers/terraform-provider-baiducloud/tree/master/gendocs.
 
+## [Terraform Registry](https://registry.terraform.io/providers/Trois-Six/sendgrid)
+
 ## Known issues
 
 The API KEY API is not completely documented: when you don't set scopes, you get all scopes. This is managed by the provider.
