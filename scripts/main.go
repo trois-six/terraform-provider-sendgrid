@@ -35,12 +35,12 @@ func main() {
 
 	// document for DataSources
 	for k, v := range provider.DataSourcesMap {
-		genDoc("data_source", fpath, k, v)
+		genDoc("data_source", "data-sources", fpath, k, v)
 	}
 
 	// document for Resources
 	for k, v := range provider.ResourcesMap {
-		genDoc("resource", fpath, k, v)
+		genDoc("resource", "resources", fpath, k, v)
 	}
 
 	// document for Index
@@ -50,11 +50,11 @@ func main() {
 // genIdx generating index for resource
 func genIdx(fpath string) {
 	type Index struct {
-		Name         string
-		NameShort    string
-		ResType      string
-		ResTypeShort string
-		Resources    [][]string
+		Name          string
+		NameShort     string
+		ResType       string
+		ResTypeFolder string
+		Resources     [][]string
 	}
 
 	resources := ""
@@ -105,17 +105,19 @@ func genIdx(fpath string) {
 			}
 			vvv := ""
 			resType := "datasource"
+			resTypeFolder := "data-sources"
 			if vv != "Data Sources" {
 				resType = "resource"
+				resTypeFolder = "resources"
 				vs := strings.Split(vv, " ")
 				vvv = strings.ToLower(strings.Join(vs[:len(vs)-1], "-"))
 			}
 			index = Index{
-				Name:         vv,
-				NameShort:    vvv,
-				ResType:      resType,
-				ResTypeShort: resType[0:1],
-				Resources:    [][]string{},
+				Name:          vv,
+				NameShort:     vvv,
+				ResType:       resType,
+				ResTypeFolder: resTypeFolder,
+				Resources:     [][]string{},
 			}
 		}
 	}
@@ -163,10 +165,11 @@ func genIdx(fpath string) {
 }
 
 // genDoc generating doc for resource
-func genDoc(dtype, fpath, name string, resource *schema.Resource) {
+func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	data := map[string]string{
 		"name":              name,
 		"dtype":             strings.Replace(dtype, "_", "", -1),
+		"dtype_folder":      dtypeFolder,
 		"resource":          name[len(providerName)+1:],
 		"example":           "",
 		"description":       "",
@@ -260,7 +263,7 @@ func genDoc(dtype, fpath, name string, resource *schema.Resource) {
 	}
 	data["attributes"] = strings.Join(attributes, "\n")
 
-	fname = fmt.Sprintf("%s/%s/%s.md", docRoot, dtype[0:1], data["resource"])
+	fname = fmt.Sprintf("%s/%s/%s.md", docRoot, dtypeFolder, data["resource"])
 	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", fname, err)

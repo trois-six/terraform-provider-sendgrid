@@ -72,5 +72,5 @@ Credentials must be provided via the `SENDGRID_API_KEY` environment variable in 
 ## Datasources/Resources reference
 {{range $k, $v := .datasource}}
 ### {{$v.Name}}
-{{range $kk, $vv := $v.Resources}}* [{{$v.ResType}} {{index $vv 0}}]({{$v.ResTypeShort}}/{{index $vv 1}}.md)
+{{range $kk, $vv := $v.Resources}}* [{{$v.ResType}} {{index $vv 0}}]({{$v.ResTypeFolder}}/{{index $vv 1}}.md)
 {{end}}{{end}}

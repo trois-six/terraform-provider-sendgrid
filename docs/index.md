@@ -72,11 +72,11 @@ Credentials must be provided via the `SENDGRID_API_KEY` environment variable in 
 ## Datasources/Resources reference
 
 ### API key Resource
-* [resource sendgrid_api_key](r/api_key.md)
+* [resource sendgrid_api_key](resources/api_key.md)
 
 ### Subuser resource
-* [resource sendgrid_subuser](r/subuser.md)
+* [resource sendgrid_subuser](resources/subuser.md)
 
 ### Template Resources
-* [resource sendgrid_template](r/template.md)
-* [resource sendgrid_template_version](r/template_version.md)
+* [resource sendgrid_template](resources/template.md)
+* [resource sendgrid_template_version](resources/template_version.md)

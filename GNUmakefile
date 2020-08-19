@@ -36,4 +36,7 @@ sweep:
 test-release:
 	goreleaser --snapshot --skip-publish --rm-dist
 
-.PHONY: build test testacc fmt fmtcheck lint golangci-lint sweep test-release
+release:
+	goreleaser release --rm-dist
+
+.PHONY: build test testacc fmt fmtcheck lint golangci-lint sweep test-release release
