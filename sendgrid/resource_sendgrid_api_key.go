@@ -94,6 +94,7 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(apiKey.ID)
+	d.Set("api_key", apiKey.APIKey)
 
 	return resourceSendgridAPIKeyRead(ctx, d, m)
 }
@@ -108,8 +109,6 @@ func resourceSendgridAPIKeyRead(_ context.Context, d *schema.ResourceData, m int
 
 	//nolint:errcheck
 	d.Set("name", apiKey.Name)
-	//nolint:errcheck
-	d.Set("api_key", apiKey.APIKey)
 	//nolint:errcheck
 	d.Set("scopes", apiKey.Scopes)
 
