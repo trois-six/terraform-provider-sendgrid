@@ -1,4 +1,4 @@
-package sendgrid
+package sendgrid_test
 
 import (
 	"fmt"
@@ -41,9 +41,9 @@ func testAccCheckSendgridSubuserDestroy(s *terraform.State) error {
 
 		SubuserName := rs.Primary.ID
 
-		_, err := c.DeleteSubuser(SubuserName)
-		if err != nil {
-			return err
+		_, requestErr := c.DeleteSubuser(SubuserName)
+		if requestErr.Err != nil {
+			return requestErr.Err
 		}
 	}
 
@@ -70,7 +70,7 @@ func testAccCheckSendgridSubuserExists(n string) resource.TestCheckFunc {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No SubuserName set")
+			return fmt.Errorf("No SubUserName set")
 		}
 
 		return nil

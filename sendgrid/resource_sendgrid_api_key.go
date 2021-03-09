@@ -70,16 +70,17 @@ func scopeInScopes(scopes []string, scope string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
 func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*sendgrid.Client)
-
-	name := d.Get("name").(string)
-	subUserOnBehalfOf := d.Get("sub_user_on_behalf_of").(string)
-	c.OnBehalfOf = subUserOnBehalfOf
 	var scopes []string
+
+	c := m.(*sendgrid.Client)
+	name := d.Get("name").(string)
+	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
+
 	for _, scope := range d.Get("scopes").(*schema.Set).List() {
 		scopes = append(scopes, scope.(string))
 	}
@@ -107,8 +108,7 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 func resourceSendgridAPIKeyRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	subUserOnBehalfOf := d.Get("sub_user_on_behalf_of").(string)
-	c.OnBehalfOf = subUserOnBehalfOf
+	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
 	apiKey, err := c.ReadAPIKey(d.Id())
 	if err != nil {
@@ -134,8 +134,7 @@ func hasDiff(o, n interface{}) bool {
 func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	subUserOnBehalfOf := d.Get("sub_user_on_behalf_of").(string)
-	c.OnBehalfOf = subUserOnBehalfOf
+	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
 	a := sendgrid.APIKey{
 		ID:   d.Id(),
@@ -151,11 +150,11 @@ func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m
 		for _, scope := range d.Get("scopes").(*schema.Set).List() {
 			scopes = append(scopes, scope.(string))
 		}
+
 		a.Scopes = scopes
 	}
 
-	_, err := c.UpdateAPIKey(d.Id(), a.Name, a.Scopes)
-	if err != nil {
+	if _, err := c.UpdateAPIKey(d.Id(), a.Name, a.Scopes); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -165,8 +164,7 @@ func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourceSendgridAPIKeyDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	subUserOnBehalfOf := d.Get("sub_user_on_behalf_of").(string)
-	c.OnBehalfOf = subUserOnBehalfOf
+	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
 	_, err := c.DeleteAPIKey(d.Id())
 	if err != nil {

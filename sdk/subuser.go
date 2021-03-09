@@ -3,7 +3,7 @@ package sendgrid
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"net/http"
 	"net/url"
 )
 
@@ -13,12 +13,11 @@ type creditAllocation struct {
 
 type RequestError struct {
 	StatusCode int
-
-	Err error
+	Err        error
 }
 
-// Subuser is a Sendgrid Subuser.
-type Subuser struct {
+// SubUser is a Sendgrid SubUser.
+type SubUser struct {
 	ID                 int              `json:"id,omitempty"`
 	UserID             int              `json:"user_id,omitempty"`
 	UserName           string           `json:"username,omitempty"`
@@ -31,140 +30,127 @@ type Subuser struct {
 	CreditAllocation   creditAllocation `json:"credit_allocation,omitempty"`
 }
 
-type subuserError struct {
+type subUserError struct {
 	Field   string `json:"field,omitempty"`
 	Message string `json:"message,omitempty"`
 }
-type subuserErrors struct {
-	Errors []subuserError `json:"errors,omitempty"`
+
+type subUserErrors struct {
+	Errors []subUserError `json:"errors,omitempty"`
 }
 
-func parseSubuser(respBody string) (*Subuser, error) {
-	var body Subuser
-	err := json.Unmarshal([]byte(respBody), &body)
-	if err != nil {
-		return nil, err
+func parseSubUsers(respBody string) ([]SubUser, RequestError) {
+	var body []SubUser
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing subUsers: %w", err),
+		}
 	}
-	return &body, nil
-}
 
-func parseSubusers(respBody string) (*Subuser, error) {
-	var body []Subuser
-	log.Printf("[DEBUG] Parsing sub users, response body: %s", respBody)
-	err := json.Unmarshal([]byte(respBody), &body)
-	if err != nil {
-		log.Printf("[ERROR] Couldn't parse sub users")
-		return nil, err
-	}
-	return &body[0], nil
+	return body, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
 // CreateSubuser creates a subuser and returns it.
-func (c *Client) CreateSubuser(username, email, password string, ips []string) (*Subuser, *RequestError) {
+func (c *Client) CreateSubuser(
+	username, email, password string,
+	ips []string,
+) (*SubUser, RequestError) {
 	if username == "" {
-		return nil, GenericError(fmt.Errorf("[CreateSubuser] a username is required"))
+		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
+
 	if email == "" {
-		return nil, GenericError(fmt.Errorf("[CreateSubuser] an email is required"))
+		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrEmailRequired}
 	}
+
 	if password == "" {
-		return nil, GenericError(fmt.Errorf("[CreateSubuser] a password is required"))
+		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrPasswordRequired}
 	}
+
 	if len(ips) < 1 {
-		return nil, GenericError(fmt.Errorf("[CreateSubuser] at least one ip address is required"))
+		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrIPRequired}
 	}
-	respBody, statusCode, err := c.Post("POST", "/subusers", Subuser{
+
+	respBody, statusCode, err := c.Post("POST", "/subusers", SubUser{
 		UserName: username,
 		Email:    email,
 		Password: password,
 		IPs:      ips,
 	})
-
-	log.Printf("[DEBUG] [CreateSubuser] status: %d, body: %s", statusCode, respBody)
-
-	if err != nil {
-		return nil, &RequestError{
+	if err != nil || statusCode >= 300 {
+		return nil, RequestError{
 			StatusCode: statusCode,
-			Err:        err,
+			Err:        fmt.Errorf("failed creating subUser: %w", err),
 		}
 	}
 
-	if statusCode >= 300 {
-		return nil, &RequestError{
-			StatusCode: statusCode,
-			Err:        fmt.Errorf("[CreateSubuser] error returned from API, status: %d, body: %s", statusCode, respBody),
-		}
-	}
+	subUsers, requestErr := parseSubUsers(respBody)
 
-	subuser, err := parseSubuser(respBody)
-	return subuser, GenericError(err)
+	return &subUsers[0], requestErr
 }
 
 // ReadSubuser retreives a subuser and returns it.
-func (c *Client) ReadSubuser(username string) (*Subuser, error) {
+func (c *Client) ReadSubUser(username string) (*SubUser, RequestError) {
 	if username == "" {
-		return nil, fmt.Errorf("[ReadSubuser] a username is required")
+		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
 
 	endpoint := "/subusers?username=" + url.QueryEscape(username)
 
-	log.Printf("[DEBUG] Searching for user at: %s", endpoint)
-
-	respBody, _, err := c.Get("GET", endpoint)
+	respBody, statusCode, err := c.Get("GET", endpoint)
 	if err != nil {
-		return nil, err
-	}
-	return parseSubusers(respBody)
-}
-
-// UpdateSubuser enables/disables a subuser.
-func (c *Client) UpdateSubuser(username string, disabled bool) (bool, error) {
-	if username == "" {
-		return false, fmt.Errorf("[UpdateSubuser] a name is required")
-	}
-	respBody, _, err := c.Post("PATCH", "/subusers/"+username, Subuser{
-		Disabled: disabled,
-	})
-	if err != nil {
-		return false, err
-	}
-	var body subuserErrors
-	err = json.Unmarshal([]byte(respBody), &body)
-	if err != nil {
-		return false, err
-	}
-	return len(body.Errors) == 0, nil
-}
-
-func (r *RequestError) Error() string {
-	return fmt.Sprintf("status: %d, err: %s", r.StatusCode, r.Err)
-}
-
-func GenericError(error error) *RequestError {
-	return &RequestError{
-		StatusCode: 500,
-		Err:        error,
-	}
-}
-
-// DeleteSubuser deletes a subuser.
-func (c *Client) DeleteSubuser(username string) (bool, *RequestError) {
-	if username == "" {
-		return false, GenericError(fmt.Errorf("[DeleteSubuser] a username is required"))
-	}
-	responseBody, statusCode, err := c.Get("DELETE", "/subusers/"+username)
-	if err != nil {
-		return false, GenericError(err)
-	}
-
-	if statusCode > 299 && statusCode != 404 {
-		return false, &RequestError{
+		return nil, RequestError{
 			StatusCode: statusCode,
-			Err:        fmt.Errorf("[DeleteSubuser] error deleting user: %s", username),
+			Err:        fmt.Errorf("failed reading subUser: %w", err),
 		}
 	}
 
-	log.Printf("[DEBUG] [DeleteSubuser] status code: %d, responseBody: %s", statusCode, responseBody)
+	subUsers, requestErr := parseSubUsers(respBody)
 
-	return true, nil
+	return &subUsers[0], requestErr
+}
+
+// UpdateSubuser enables/disables a subuser.
+func (c *Client) UpdateSubuser(username string, disabled bool) (bool, RequestError) {
+	if username == "" {
+		return false, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
+	}
+
+	respBody, statusCode, err := c.Post("PATCH", "/subusers/"+username, SubUser{
+		Disabled: disabled,
+	})
+	if err != nil {
+		return false, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("failed updating subUser: %w", err),
+		}
+	}
+
+	var body subUserErrors
+	if err = json.Unmarshal([]byte(respBody), &body); err != nil {
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed updating subUser: %w", err),
+		}
+	}
+
+	return len(body.Errors) == 0, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
+// DeleteSubuser deletes a subuser.
+func (c *Client) DeleteSubuser(username string) (bool, RequestError) {
+	if username == "" {
+		return false, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
+	}
+
+	if _, statusCode, err := c.Get("DELETE", "/subusers/"+username); statusCode > 299 ||
+		err != nil {
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed deleting subUser: %w", err),
+		}
+	}
+
+	return true, RequestError{StatusCode: http.StatusOK, Err: nil}
 }

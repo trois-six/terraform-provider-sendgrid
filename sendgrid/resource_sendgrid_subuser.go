@@ -22,6 +22,8 @@ package sendgrid
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,7 +102,11 @@ func resourceSendgridSubuserCreate(ctx context.Context, d *schema.ResourceData, 
 		ips = append(ips, ip.(string))
 	}
 
-	if err := resource.Retry(d.Timeout(schema.TimeoutCreate), retrySubUserCreateClient(c, username, email, password, ips)); err != nil {
+	if err := resource.RetryContext(
+		ctx,
+		d.Timeout(schema.TimeoutCreate),
+		retrySubUserCreateClient(c, username, email, password, ips),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -113,16 +119,22 @@ func resourceSendgridSubuserCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceSendgridSubuserRead(ctx, d, m)
 }
 
-func retrySubUserCreateClient(c *sendgrid.Client, username string, email string, password string, ips []string) func() *resource.RetryError {
+func retrySubUserCreateClient(
+	c *sendgrid.Client,
+	username string,
+	email string,
+	password string,
+	ips []string,
+) func() *resource.RetryError {
 	return func() *resource.RetryError {
-		_, err := c.CreateSubuser(username, email, password, ips)
+		_, requestErr := c.CreateSubuser(username, email, password, ips)
 
-		if err != nil && err.StatusCode == 429 {
-			return resource.RetryableError(fmt.Errorf("expected instance to be created but we were rate limited"))
+		if requestErr.Err != nil && requestErr.StatusCode == http.StatusTooManyRequests {
+			return resource.RetryableError(ErrCreateRateLimit)
 		}
 
-		if err != nil && err.Err != nil {
-			return resource.NonRetryableError(err)
+		if requestErr.Err != nil {
+			return resource.NonRetryableError(requestErr.Err)
 		}
 
 		return nil
@@ -132,9 +144,9 @@ func retrySubUserCreateClient(c *sendgrid.Client, username string, email string,
 func resourceSendgridSubuserRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	Subuser, err := c.ReadSubuser(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	Subuser, requestErr := c.ReadSubUser(d.Id())
+	if requestErr.Err != nil {
+		return diag.FromErr(requestErr.Err)
 	}
 
 	//nolint:errcheck
@@ -151,9 +163,9 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 	c := m.(*sendgrid.Client)
 
 	if d.HasChange("disabled") {
-		_, err := c.UpdateSubuser(d.Id(), d.Get("disabled").(bool))
-		if err != nil {
-			return diag.FromErr(err)
+		_, requestErr := c.UpdateSubuser(d.Id(), d.Get("disabled").(bool))
+		if requestErr.Err != nil {
+			return diag.FromErr(requestErr.Err)
 		}
 	}
 
@@ -162,24 +174,27 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 
 func retrySubUserDeleteClient(c *sendgrid.Client, username string) func() *resource.RetryError {
 	return func() *resource.RetryError {
-		_, err := c.DeleteSubuser(username)
+		_, requestErr := c.DeleteSubuser(username)
 
-		if err != nil && err.StatusCode == 429 {
-			return resource.RetryableError(fmt.Errorf("expected instance to be deleted but we were rate limited"))
+		if requestErr.Err != nil && requestErr.StatusCode == http.StatusTooManyRequests {
+			return resource.RetryableError(ErrCreateRateLimit)
 		}
 
-		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("error creating subuser: %s", err))
+		if requestErr.Err != nil {
+			return resource.NonRetryableError(
+				fmt.Errorf("error creating subuser: %w", requestErr.Err),
+			)
 		}
 
 		return nil
 	}
 }
 
-func resourceSendgridSubuserDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridSubuserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	if err := resource.Retry(d.Timeout(schema.TimeoutCreate), retrySubUserDeleteClient(c, d.Id())); err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), retrySubUserDeleteClient(
+		c, d.Id())); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -21,7 +21,7 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
-// Provider terraform.ResourceProvider
+// Provider terraform.ResourceProvider.
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -62,8 +62,11 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Sendgrid API key wasn't provided",
-			Detail:   "Unable to retrieve the API key, either from the configuration of the provider, nor the env variable SENDGRID_API_KEY",
+			Detail: `Unable to retrieve the API key, 
+			           either from the configuration of the provider, 
+					   nor the env variable SENDGRID_API_KEY`,
 		})
+
 		return nil, diags
 	}
 

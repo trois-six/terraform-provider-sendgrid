@@ -26,7 +26,6 @@ package sendgrid
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -35,6 +34,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
+
+const ImportSplitParts = 2
 
 func resourceSendgridTemplateVersion() *schema.Resource {
 	return &schema.Resource{
@@ -63,9 +64,11 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 				Computed:    true,
 			},
 			"active": {
-				Type:        schema.TypeInt,
-				Description: "Set the version as the active version associated with the template. Only one version of a template can be active. The first version created for a template will automatically be set to Active. Allowed values: 0, 1.",
-				Optional:    true,
+				Type: schema.TypeInt,
+				Description: `Set the version as the active version associated with the template. 
+							  Only one version of a template can be active. 
+							  The first version created for a template will automatically be set to Active. Allowed values: 0, 1.`,
+				Optional: true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -83,10 +86,11 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 				Computed:    true,
 			},
 			"generate_plain_content": {
-				Type:        schema.TypeBool,
-				Description: "If true (default), plain_content is always generated from html_content. If false, plain_content is not altered.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: `If true (default), plain_content is always generated from html_content. 
+							  If false, plain_content is not altered.`,
+				Optional: true,
+				Default:  true,
 			},
 			"subject": {
 				Type:        schema.TypeString,
@@ -101,9 +105,10 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"code", "design"}, false),
 			},
 			"test_data": {
-				Type:        schema.TypeString,
-				Description: "For dynamic templates only, the mock json data that will be used for template preview and test sends.",
-				Optional:    true,
+				Type: schema.TypeString,
+				Description: `For dynamic templates only, 
+				              the mock json data that will be used for template preview and test sends.`,
+				Optional: true,
 			},
 		},
 	}
@@ -165,7 +170,11 @@ func resourceSendgridTemplateVersionRead(_ context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceSendgridTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridTemplateVersionUpdate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{},
+) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	baseTemplateVersion := sendgrid.TemplateVersion{
@@ -177,21 +186,27 @@ func resourceSendgridTemplateVersionUpdate(ctx context.Context, d *schema.Resour
 	if d.HasChange("active") {
 		templateVersion.Active = d.Get("active").(int)
 	}
+
 	if d.HasChange("name") {
 		templateVersion.Name = d.Get("name").(string)
 	}
+
 	if d.HasChange("html_content") {
 		templateVersion.HTMLContent = d.Get("html_content").(string)
 	}
+
 	if d.HasChange("generate_plain_content") {
 		templateVersion.GeneratePlainContent = d.Get("generate_plain_content").(bool)
 	}
+
 	if d.HasChange("subject") {
 		templateVersion.Subject = d.Get("subject").(string)
 	}
+
 	if d.HasChange("editor") {
 		templateVersion.Editor = d.Get("editor").(string)
 	}
+
 	if d.HasChange("test_data") {
 		templateVersion.TestData = d.Get("test_data").(string)
 	}
@@ -200,8 +215,7 @@ func resourceSendgridTemplateVersionUpdate(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	_, err := c.UpdateTemplateVersion(templateVersion)
-	if err != nil {
+	if _, err := c.UpdateTemplateVersion(templateVersion); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -219,10 +233,14 @@ func resourceSendgridTemplateVersionDelete(_ context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceSendgridTemplateVersionImport(ctx context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+func resourceSendgridTemplateVersionImport(
+	ctx context.Context,
+	d *schema.ResourceData,
+	_ interface{},
+) ([]*schema.ResourceData, error) {
 	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("Invalid import. Supported import format: {{templateID}}/{{templateVersionID}}")
+	if len(parts) != ImportSplitParts {
+		return nil, ErrInvalidImportFormat
 	}
 
 	//nolint:errcheck

@@ -15,75 +15,76 @@ type APIKey struct {
 
 func parseAPIKey(respBody string) (*APIKey, error) {
 	var body APIKey
-	err := json.Unmarshal([]byte(respBody), &body)
-	if err != nil {
-		return nil, err
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		return nil, fmt.Errorf("failed parsing API key: %w", err)
 	}
+
 	return &body, nil
 }
 
 // CreateAPIKey creates an APIKey and returns it.
 func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, error) {
 	if name == "" {
-		return nil, fmt.Errorf("[CreateAPIKey] a name is required")
+		return nil, ErrNameRequired
 	}
+
 	respBody, _, err := c.Post("POST", "/api_keys", APIKey{
 		Name:   name,
 		Scopes: scopes,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed creating API key: %w", err)
 	}
+
 	return parseAPIKey(respBody)
 }
 
 // ReadAPIKey retreives an APIKey and returns it.
 func (c *Client) ReadAPIKey(id string) (*APIKey, error) {
 	if id == "" {
-		return nil, fmt.Errorf("[ReadAPIKey] an ID is required")
+		return nil, ErrAPIKeyIDRequired
 	}
+
 	respBody, _, err := c.Get("GET", "/api_keys/"+id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed reading API key: %w", err)
 	}
+
 	return parseAPIKey(respBody)
 }
 
 // UpdateAPIKey edits an APIKey and returns it.
 func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, error) {
 	if id == "" {
-		return nil, fmt.Errorf("[UpdateAPIKey] an ID is required")
+		return nil, ErrAPIKeyIDRequired
 	}
+
 	t := APIKey{}
 	if name != "" {
 		t.Name = name
 	}
+
 	if len(scopes) > 0 {
 		t.Scopes = scopes
 	}
+
 	respBody, _, err := c.Post("PUT", "/api_keys/"+id, t)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed updating API key: %w", err)
 	}
+
 	return parseAPIKey(respBody)
 }
 
 // DeleteAPIKey deletes an APIKey.
 func (c *Client) DeleteAPIKey(id string) (bool, error) {
 	if id == "" {
-		return false, fmt.Errorf("[DeleteAPIKey] an ID is required")
-	}
-	responseBody, statusCode, err := c.Get("DELETE", "/api_keys/"+id)
-
-	if statusCode > 299 && statusCode != 404 {
-		return false, &RequestError{
-			StatusCode: statusCode,
-			Err:        fmt.Errorf("[DeleteAPIKey] error deleting api key, status: %d, response: %s", statusCode, responseBody),
-		}
+		return false, ErrAPIKeyIDRequired
 	}
 
-	if err != nil {
-		return false, err
+	if _, statusCode, err := c.Get("DELETE", "/api_keys/"+id); statusCode > 299 || err != nil {
+		return false, fmt.Errorf("failed deleting API key: %w", err)
 	}
+
 	return true, nil
 }

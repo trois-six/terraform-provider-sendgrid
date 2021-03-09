@@ -47,7 +47,7 @@ func main() {
 	genIdx(fpath)
 }
 
-// genIdx generating index for resource
+// genIdx generating index for resource.
 func genIdx(fpath string) {
 	type Index struct {
 		Name          string
@@ -63,15 +63,18 @@ func genIdx(fpath string) {
 
 	fname := "provider.go"
 	log.Printf("[START]get description from file: %s\n", fname)
+
 	description, err := getFileDescription(fmt.Sprintf("%s/%s", fpath, fname))
 	if err != nil {
 		log.Printf("[SKIP!]get description failed, skip: %s", err)
+
 		return
 	}
 
 	description = strings.TrimSpace(description)
 	if description == "" {
 		log.Printf("[SKIP!]description empty, skip: %s\n", fname)
+
 		return
 	}
 
@@ -80,20 +83,25 @@ func genIdx(fpath string) {
 		resources = strings.TrimSpace(description[pos+16:])
 	} else {
 		log.Printf("[SKIP!]resource list missing, skip: %s\n", fname)
+
 		return
 	}
 
 	index := Index{}
+
 	for _, v := range strings.Split(resources, "\n") {
 		vv := strings.TrimSpace(v)
 		if vv == "" {
 			continue
 		}
+
 		if strings.HasPrefix(v, "  ") {
 			if index.Name == "" {
 				log.Printf("[FAIL!]no resource name found: %s", v)
+
 				return
 			}
+
 			index.Resources = append(index.Resources, []string{vv, vv[len(providerName)+1:]})
 		} else {
 			if index.Name != "" {
@@ -136,9 +144,11 @@ func genIdx(fpath string) {
 	}
 
 	fname = fmt.Sprintf("%s/index.md", docRoot)
+
 	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", fname, err)
+
 		return
 	}
 
@@ -151,24 +161,27 @@ func genIdx(fpath string) {
 	idxTPL, err := ioutil.ReadFile(indexFile)
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", indexFile, err)
+
 		return
 	}
 
 	t := template.Must(template.New("t").Parse(string(idxTPL)))
+
 	err = t.Execute(fd, data)
 	if err != nil {
 		log.Printf("[FAIL!]write file %s failed: %s", fname, err)
+
 		return
 	}
 
 	log.Printf("[SUCC.]write doc to file success: %s", fname)
 }
 
-// genDoc generating doc for resource
+// genDoc generating doc for resource.
 func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	data := map[string]string{
 		"name":              name,
-		"dtype":             strings.Replace(dtype, "_", "", -1),
+		"dtype":             strings.ReplaceAll(dtype, "_", ""),
 		"dtype_folder":      dtypeFolder,
 		"resource":          name[len(providerName)+1:],
 		"example":           "",
@@ -183,12 +196,14 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	description, err := getFileDescription(fmt.Sprintf("%s/%s", fpath, fname))
 	if err != nil {
 		log.Printf("[SKIP!]get description failed, skip: %s", err)
+
 		return
 	}
 
 	description = strings.TrimSpace(description)
 	if description == "" {
 		log.Printf("[SKIP!]description empty, skip: %s\n", fname)
+
 		return
 	}
 
@@ -204,10 +219,12 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 		description = strings.TrimSpace(description[:pos])
 	} else {
 		log.Printf("[SKIP!]example usage missing, skip: %s\n", fname)
+
 		return
 	}
 
 	data["description"] = description
+
 	pos = strings.Index(description, "\n\n")
 	if pos != -1 {
 		data["description_short"] = strings.TrimSpace(description[:pos])
@@ -221,21 +238,30 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	subStruct := []string{}
 
 	var keys []string
+
 	for k := range resource.Schema {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
+
 	for _, k := range keys {
 		v := resource.Schema[k]
 		if v.Description == "" {
 			continue
 		}
+
 		if v.Required {
 			opt := "Required"
 			if v.ForceNew {
 				opt += ", ForceNew"
 			}
-			requiredArgs = append(requiredArgs, fmt.Sprintf("* `%s` - (%s) %s", k, opt, v.Description))
+
+			requiredArgs = append(
+				requiredArgs,
+				fmt.Sprintf("* `%s` - (%s) %s", k, opt, v.Description),
+			)
+
 			subStruct = append(subStruct, getSubStruct(0, k, v)...)
 		} else if v.Optional {
 			opt := "Optional"
@@ -258,15 +284,19 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 
 	requiredArgs = append(requiredArgs, optionalArgs...)
 	data["arguments"] = strings.Join(requiredArgs, "\n")
+
 	if len(subStruct) > 0 {
 		data["arguments"] += "\n" + strings.Join(subStruct, "\n")
 	}
+
 	data["attributes"] = strings.Join(attributes, "\n")
 
 	fname = fmt.Sprintf("%s/%s/%s.md", docRoot, dtypeFolder, data["resource"])
 	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", fname, err)
+
 		return
 	}
 
@@ -279,20 +309,23 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	docTPL, err := ioutil.ReadFile(docFile)
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", docFile, err)
+
 		return
 	}
 
 	t := template.Must(template.New("t").Parse(string(docTPL)))
+
 	err = t.Execute(fd, data)
 	if err != nil {
 		log.Printf("[FAIL!]write file %s failed: %s", fname, err)
+
 		return
 	}
 
 	log.Printf("[SUCC.]write doc to file success: %s", fname)
 }
 
-// getAttributes get attributes from schema
+// getAttributes get attributes from schema.
 func getAttributes(step int, k string, v *schema.Schema) []string {
 	attributes := []string{}
 	ident := strings.Repeat(" ", step*2)
@@ -304,18 +337,26 @@ func getAttributes(step int, k string, v *schema.Schema) []string {
 	if v.Computed {
 		if _, ok := v.Elem.(*schema.Resource); ok {
 			listAttributes := []string{}
+
 			for kk, vv := range v.Elem.(*schema.Resource).Schema {
 				attrs := getAttributes(step+1, kk, vv)
 				if len(attrs) > 0 {
 					listAttributes = append(listAttributes, attrs...)
 				}
 			}
+
 			slistAttributes := ""
+
 			sort.Strings(listAttributes)
+
 			if len(listAttributes) > 0 {
 				slistAttributes = "\n" + strings.Join(listAttributes, "\n")
 			}
-			attributes = append(attributes, fmt.Sprintf("%s* `%s` - %s%s", ident, k, v.Description, slistAttributes))
+
+			attributes = append(
+				attributes,
+				fmt.Sprintf("%s* `%s` - %s%s", ident, k, v.Description, slistAttributes),
+			)
 		} else {
 			attributes = append(attributes, fmt.Sprintf("%s* `%s` - %s", ident, k, v.Description))
 		}
@@ -324,7 +365,7 @@ func getAttributes(step int, k string, v *schema.Schema) []string {
 	return attributes
 }
 
-// getFileDescription get description from go file
+// getFileDescription get description from go file.
 func getFileDescription(fname string) (string, error) {
 	fset := token.NewFileSet()
 
@@ -336,7 +377,7 @@ func getFileDescription(fname string) (string, error) {
 	return parsedAst.Doc.Text(), nil
 }
 
-// getSubStruct get sub structure from go file
+// getSubStruct get sub structure from go file.
 func getSubStruct(step int, k string, v *schema.Schema) []string {
 	subStructs := []string{}
 
@@ -346,7 +387,10 @@ func getSubStruct(step int, k string, v *schema.Schema) []string {
 
 	if v.Type == schema.TypeMap || v.Type == schema.TypeList || v.Type == schema.TypeSet {
 		if _, ok := v.Elem.(*schema.Resource); ok {
-			subStructs = append(subStructs, fmt.Sprintf("\nThe `%s` object supports the following:\n", k))
+			subStructs = append(
+				subStructs,
+				fmt.Sprintf("\nThe `%s` object supports the following:\n", k),
+			)
 			requiredArgs := []string{}
 			optionalArgs := []string{}
 			attributes := []string{}
@@ -355,18 +399,25 @@ func getSubStruct(step int, k string, v *schema.Schema) []string {
 			for kk := range v.Elem.(*schema.Resource).Schema {
 				keys = append(keys, kk)
 			}
+
 			sort.Strings(keys)
+
 			for _, kk := range keys {
 				vv := v.Elem.(*schema.Resource).Schema[kk]
 				if vv.Description == "" {
 					vv.Description = "************************* Please input Description for Schema ************************* "
 				}
+
 				if vv.Required {
 					opt := "Required"
 					if vv.ForceNew {
 						opt += ", ForceNew"
 					}
-					requiredArgs = append(requiredArgs, fmt.Sprintf("* `%s` - (%s) %s", kk, opt, vv.Description))
+
+					requiredArgs = append(
+						requiredArgs,
+						fmt.Sprintf("* `%s` - (%s) %s", kk, opt, vv.Description),
+					)
 				} else if vv.Optional {
 					opt := "Optional"
 					if vv.ForceNew {
@@ -380,10 +431,13 @@ func getSubStruct(step int, k string, v *schema.Schema) []string {
 					}
 				}
 			}
+
 			sort.Strings(requiredArgs)
 			subStructs = append(subStructs, requiredArgs...)
+
 			sort.Strings(optionalArgs)
 			subStructs = append(subStructs, optionalArgs...)
+
 			sort.Strings(attributes)
 			subStructs = append(subStructs, attributes...)
 
@@ -393,5 +447,6 @@ func getSubStruct(step int, k string, v *schema.Schema) []string {
 			}
 		}
 	}
+
 	return subStructs
 }

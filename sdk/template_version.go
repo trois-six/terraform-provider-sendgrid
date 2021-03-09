@@ -24,66 +24,83 @@ type TemplateVersion struct {
 
 func parseTemplateVersion(respBody string) (*TemplateVersion, error) {
 	var body TemplateVersion
+
 	err := json.Unmarshal([]byte(respBody), &body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed parsing template version: %w", err)
 	}
+
 	return &body, nil
 }
 
 // CreateTemplateVersion creates a new version of a transactional template and returns it.
 func (c *Client) CreateTemplateVersion(t TemplateVersion) (*TemplateVersion, error) {
 	if t.TemplateID == "" {
-		return nil, fmt.Errorf("[CreateTemplateVersion] a template ID is required")
+		return nil, ErrTemplateVersionIDRequired
 	}
+
 	if t.Name == "" {
-		return nil, fmt.Errorf("[CreateTemplateVersion] a template Name is required")
+		return nil, ErrTemplateVersionNameRequired
 	}
+
 	if t.Subject == "" {
-		return nil, fmt.Errorf("[CreateTemplateVersion] a template Subject is required")
+		return nil, ErrTemplateVersionSubjectRequired
 	}
+
 	respBody, _, err := c.Post("POST", "/templates/"+t.TemplateID+"/versions", t)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed creating template version: %w", err)
 	}
+
 	return parseTemplateVersion(respBody)
 }
 
 // ReadTemplateVersion retreives a version of a transactional template and returns it.
 func (c *Client) ReadTemplateVersion(templateID, id string) (*TemplateVersion, error) {
 	if templateID == "" {
-		return nil, fmt.Errorf("[ReadTemplateVersion] a template ID is required")
+		return nil, ErrTemplateVersionIDRequired
 	}
+
 	if id == "" {
-		return nil, fmt.Errorf("[ReadTemplateVersion] a version ID is required")
+		return nil, ErrTemplateIDRequired
 	}
+
 	respBody, _, err := c.Get("GET", "/templates/"+templateID+"/versions/"+id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed reading template version: %w", err)
 	}
+
 	return parseTemplateVersion(respBody)
 }
 
 // UpdateTemplateVersion edits a version of a transactional template and returns it.
 func (c *Client) UpdateTemplateVersion(t TemplateVersion) (*TemplateVersion, error) {
 	if t.ID == "" {
-		return nil, fmt.Errorf("[UpdateTemplateVersion] a template ID is required")
+		return nil, ErrTemplateVersionIDRequired
 	}
+
 	if t.TemplateID == "" {
-		return nil, fmt.Errorf("[UpdateTemplateVersion] a template ID is required")
+		return nil, ErrTemplateIDRequired
 	}
+
 	respBody, _, err := c.Post("PATCH", "/templates/"+t.TemplateID+"/versions/"+t.ID, t)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed updating template version: %w", err)
 	}
+
 	return parseTemplateVersion(respBody)
 }
 
 // DeleteTemplateVersion deletes a version of a transactional template.
 func (c *Client) DeleteTemplateVersion(templateID, id string) (bool, error) {
-	_, _, err := c.Get("DELETE", "/templates/"+templateID+"/versions/"+id)
-	if err != nil {
-		return false, err
+	if templateID == "" {
+		return false, ErrTemplateVersionIDRequired
 	}
+
+	if _, statusCode, err := c.Get("DELETE", "/templates/"+templateID+"/versions/"+id); statusCode > 299 ||
+		err != nil {
+		return false, fmt.Errorf("failed deleting template version: %w", err)
+	}
+
 	return true, nil
 }

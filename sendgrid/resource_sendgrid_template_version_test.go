@@ -1,4 +1,4 @@
-package sendgrid
+package sendgrid_test
 
 import (
 	"fmt"
@@ -21,7 +21,11 @@ func TestAccSendgridTemplateVersionBasic(t *testing.T) {
 		CheckDestroy: testAccCheckSendgridTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSendgridTemplateVersionConfigBasic(templateName, templateVersionName, subject),
+				Config: testAccCheckSendgridTemplateVersionConfigBasic(
+					templateName,
+					templateVersionName,
+					subject,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSendgridTemplateVersionExists("sendgrid_template_version.new"),
 				),
@@ -50,7 +54,9 @@ func testAccCheckSendgridTemplateVersionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSendgridTemplateVersionConfigBasic(templateName, templateVersionName, subject string) string {
+func testAccCheckSendgridTemplateVersionConfigBasic(
+	templateName, templateVersionName, subject string,
+) string {
 	return fmt.Sprintf(`
 	resource "sendgrid_template" "template" {
 		name = %s
