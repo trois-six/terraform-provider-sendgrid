@@ -114,10 +114,3 @@ func resourceSendgridTemplateDelete(_ context.Context, d *schema.ResourceData, m
 
 	return nil
 }
-
-func resourceSendgridTemplateImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, diag.Diagnostics) {
-	if diags := resourceSendgridTemplateRead(ctx, d, m); diags != nil {
-		return nil, diags
-	}
-	return []*schema.ResourceData{d}, nil
-}

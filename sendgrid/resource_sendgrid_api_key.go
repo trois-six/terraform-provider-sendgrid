@@ -20,30 +20,12 @@ package sendgrid
 
 import (
 	"context"
-	"github.com/hashicorp/go-cty/cty"
+	"reflect"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
-
-func scopeInScopes(s string) schema.SchemaValidateDiagFunc {
-	return func(v interface{}, path cty.Path) diag.Diagnostics {
-		var diags diag.Diagnostics
-		for _, scope := range v.(*schema.Set).List() {
-			if scope.(string) == s {
-				return diags
-			}
-		}
-
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Required scope not in scopes",
-			Detail:   s + " not in the scope list",
-		})
-
-		return diags
-	}
-}
 
 func resourceSendgridAPIKey() *schema.Resource {
 	return &schema.Resource{
@@ -72,7 +54,6 @@ func resourceSendgridAPIKey() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				//ValidateDiagFunc: scopeInScopes("sender_verification_eligible"),
 			},
 			"api_key": {
 				Type:        schema.TypeString,
@@ -81,6 +62,15 @@ func resourceSendgridAPIKey() *schema.Resource {
 			},
 		},
 	}
+}
+
+func scopeInScopes(scopes []string, scope string) bool {
+	for _, v := range scopes {
+		if v == scope {
+			return true
+		}
+	}
+	return false
 }
 
 func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -94,12 +84,21 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 		scopes = append(scopes, scope.(string))
 	}
 
+	if ok := scopeInScopes(scopes, "sender_verification_eligible"); !ok {
+		scopes = append(scopes, "sender_verification_eligible")
+	}
+
+	if ok := scopeInScopes(scopes, "2fa_required"); !ok {
+		scopes = append(scopes, "2fa_required")
+	}
+
 	apiKey, err := c.CreateAPIKey(name, scopes)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(apiKey.ID)
+	//nolint:errcheck
 	d.Set("api_key", apiKey.APIKey)
 
 	return resourceSendgridAPIKeyRead(ctx, d, m)
@@ -124,6 +123,14 @@ func resourceSendgridAPIKeyRead(_ context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
+func hasDiff(o, n interface{}) bool {
+	if eq, ok := o.(schema.Equal); ok {
+		return !eq.Equal(n)
+	}
+
+	return !reflect.DeepEqual(o, n)
+}
+
 func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
@@ -135,7 +142,11 @@ func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m
 		Name: d.Get("name").(string),
 	}
 
-	if d.HasChange("scopes") {
+	o, n := d.GetChange("scopes")
+	n.(*schema.Set).Add("sender_verification_eligible")
+	n.(*schema.Set).Add("2fa_required")
+
+	if ok := hasDiff(o, n); ok {
 		var scopes []string
 		for _, scope := range d.Get("scopes").(*schema.Set).List() {
 			scopes = append(scopes, scope.(string))
@@ -163,11 +174,4 @@ func resourceSendgridAPIKeyDelete(_ context.Context, d *schema.ResourceData, m i
 	}
 
 	return nil
-}
-
-func resourceSendgridAPIKeyImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, diag.Diagnostics) {
-	if diags := resourceSendgridAPIKeyRead(ctx, d, m); diags != nil {
-		return nil, diags
-	}
-	return []*schema.ResourceData{d}, nil
 }

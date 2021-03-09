@@ -32,4 +32,4 @@ The documentation is created thank's to a fork of https://github.com/terraform-p
 
 The API KEY API is not completely documented: when you don't set scopes, you get all scopes. This is managed by the provider.
 
-When you set one or multiple scopes, even if you don't set the scope `sender_verification_eligible`, you will get it in the end. So if you want to manage your API keys with this provider, add `sender_verification_eligible` to your list of scopes, if you don't do it, you will always have a difference between what you have in your .tf file vs what you really have in Sendgrid.
+When you set one or multiple scopes, even if you don't set the scopes `sender_verification_eligible` and `2fa_required`, you will get them in the end. It's managed by the provider: if you don't add these scopes to the list of scopes, the provider does it for you.
