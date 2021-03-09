@@ -159,10 +159,3 @@ func resourceSendgridSubuserDelete(_ context.Context, d *schema.ResourceData, m 
 
 	return nil
 }
-
-func resourceSendgridSubuserImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, diag.Diagnostics) {
-	if diags := resourceSendgridSubuserRead(ctx, d, m); diags != nil {
-		return nil, diags
-	}
-	return []*schema.ResourceData{d}, nil
-}

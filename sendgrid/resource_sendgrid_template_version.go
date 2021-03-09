@@ -225,6 +225,7 @@ func resourceSendgridTemplateVersionImport(ctx context.Context, d *schema.Resour
 		return nil, fmt.Errorf("Invalid import. Supported import format: {{templateID}}/{{templateVersionID}}")
 	}
 
+	//nolint:errcheck
 	d.Set("template_id", parts[0])
 	d.SetId(parts[1])
 
