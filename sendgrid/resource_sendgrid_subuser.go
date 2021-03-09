@@ -21,8 +21,9 @@ package sendgrid
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
@@ -59,7 +60,6 @@ func resourceSendgridSubuser() *schema.Resource {
 				Description: "The IP addresses that should be assigned to this subuser.",
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				//ValidateDiagFunc: scopeInScopes("sender_verification_eligible"),
 			},
 			"user_id": {
 				Type:     schema.TypeInt,
@@ -92,30 +92,41 @@ func resourceSendgridSubuserCreate(ctx context.Context, d *schema.ResourceData, 
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	email := d.Get("email").(string)
-	ips := d.Get("ips").([]string)
 
-	Subuser, err := c.CreateSubuser(username, email, password, ips)
-	if err != nil {
+	ipsSet := d.Get("ips").(*schema.Set).List()
+	ips := make([]string, 0)
+
+	for _, ip := range ipsSet {
+		ips = append(ips, ip.(string))
+	}
+
+	if err := resource.Retry(d.Timeout(schema.TimeoutCreate), retrySubUserCreateClient(c, username, email, password, ips)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	//nolint:errcheck
-	d.Set("user_id", Subuser.UserID)
-	//nolint:errcheck
-	d.Set("signup_session_token", Subuser.SignupSessionToken)
-	//nolint:errcheck
-	d.Set("authorization_token", Subuser.AuthorizationToken)
-	//nolint:errcheck
-	d.Set("credit_allocation_type", Subuser.CreditAllocation.Type)
+	d.SetId(username)
 
 	if d.Get("disabled").(bool) {
-		d.SetId(Subuser.UserName)
 		return resourceSendgridSubuserUpdate(ctx, d, m)
 	}
 
-	d.SetId(Subuser.UserName)
+	return resourceSendgridSubuserRead(ctx, d, m)
+}
 
-	return nil
+func retrySubUserCreateClient(c *sendgrid.Client, username string, email string, password string, ips []string) func() *resource.RetryError {
+	return func() *resource.RetryError {
+		_, err := c.CreateSubuser(username, email, password, ips)
+
+		if err != nil && err.StatusCode == 429 {
+			return resource.RetryableError(fmt.Errorf("expected instance to be created but we were rate limited"))
+		}
+
+		if err != nil && err.Err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	}
 }
 
 func resourceSendgridSubuserRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -149,11 +160,26 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 	return resourceSendgridSubuserRead(ctx, d, m)
 }
 
+func retrySubUserDeleteClient(c *sendgrid.Client, username string) func() *resource.RetryError {
+	return func() *resource.RetryError {
+		_, err := c.DeleteSubuser(username)
+
+		if err != nil && err.StatusCode == 429 {
+			return resource.RetryableError(fmt.Errorf("expected instance to be deleted but we were rate limited"))
+		}
+
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("error creating subuser: %s", err))
+		}
+
+		return nil
+	}
+}
+
 func resourceSendgridSubuserDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	_, err := c.DeleteSubuser(d.Id())
-	if err != nil {
+	if err := resource.Retry(d.Timeout(schema.TimeoutCreate), retrySubUserDeleteClient(c, d.Id())); err != nil {
 		return diag.FromErr(err)
 	}
 

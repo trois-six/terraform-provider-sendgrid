@@ -73,7 +73,15 @@ func (c *Client) DeleteAPIKey(id string) (bool, error) {
 	if id == "" {
 		return false, fmt.Errorf("[DeleteAPIKey] an ID is required")
 	}
-	_, _, err := c.Get("DELETE", "/api_keys/"+id)
+	responseBody, statusCode, err := c.Get("DELETE", "/api_keys/"+id)
+
+	if statusCode > 299 && statusCode != 404 {
+		return false, &RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("[DeleteAPIKey] error deleting api key, status: %d, response: %s", statusCode, responseBody),
+		}
+	}
+
 	if err != nil {
 		return false, err
 	}
