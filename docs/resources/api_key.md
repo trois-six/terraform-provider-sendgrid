@@ -20,6 +20,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name you will use to describe this API Key.
 * `scopes` - (Optional) The individual permissions that you are giving to this API Key.
+* `sub_user_on_behalf_of` - (Optional) The subuser's username. Generates the API call as if the subuser account was making the call
 
 ## Attributes Reference
 

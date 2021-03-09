@@ -12,7 +12,7 @@ import (
 type Client struct {
 	apiKey     string
 	host       string
-	onBehalfOf string
+	OnBehalfOf string
 }
 
 // NewClient creates a Sendgrid Client.
@@ -23,7 +23,7 @@ func NewClient(apiKey, host, onBehalfOf string) *Client {
 	return &Client{
 		apiKey:     apiKey,
 		host:       host,
-		onBehalfOf: onBehalfOf,
+		OnBehalfOf: onBehalfOf,
 	}
 }
 
@@ -41,8 +41,8 @@ func bodyToJSON(body interface{}) ([]byte, error) {
 // Get gets a resource from Sendgrid.
 func (c *Client) Get(method rest.Method, endpoint string) (string, int, error) {
 	var req rest.Request
-	if c.onBehalfOf != "" {
-		req = sendgrid.GetRequestSubuser(c.apiKey, endpoint, c.host, c.onBehalfOf)
+	if c.OnBehalfOf != "" {
+		req = sendgrid.GetRequestSubuser(c.apiKey, endpoint, c.host, c.OnBehalfOf)
 	} else {
 		req = sendgrid.GetRequest(c.apiKey, endpoint, c.host)
 	}
@@ -58,8 +58,8 @@ func (c *Client) Get(method rest.Method, endpoint string) (string, int, error) {
 func (c *Client) Post(method rest.Method, endpoint string, body interface{}) (string, int, error) {
 	var err error
 	var req rest.Request
-	if c.onBehalfOf != "" {
-		req = sendgrid.GetRequestSubuser(c.apiKey, endpoint, c.host, c.onBehalfOf)
+	if c.OnBehalfOf != "" {
+		req = sendgrid.GetRequestSubuser(c.apiKey, endpoint, c.host, c.OnBehalfOf)
 	} else {
 		req = sendgrid.GetRequest(c.apiKey, endpoint, c.host)
 	}
