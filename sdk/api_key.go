@@ -106,14 +106,29 @@ func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, Reques
 }
 
 // DeleteAPIKey deletes an APIKey.
-func (c *Client) DeleteAPIKey(id string) (bool, error) {
+func (c *Client) DeleteAPIKey(id string) (bool, RequestError) {
 	if id == "" {
-		return false, ErrAPIKeyIDRequired
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
-	if _, statusCode, err := c.Get("DELETE", "/api_keys/"+id); statusCode > 299 || err != nil {
-		return false, fmt.Errorf("failed deleting API key: %w", err)
+	responseBody, statusCode, err := c.Get("DELETE", "/api_keys/"+id)
+
+	if err != nil {
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed deleting API key: %w", err),
+		}
 	}
 
-	return true, nil
+	if statusCode >= 300 && statusCode != 404 { // ignore not found
+		return false, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("failed deleting API key, status: %d, response: %s", statusCode, responseBody),
+		}
+	}
+
+	return true, RequestError{StatusCode: http.StatusOK, Err: nil}
 }

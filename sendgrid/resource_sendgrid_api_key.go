@@ -167,8 +167,8 @@ func resourceSendgridAPIKeyDelete(_ context.Context, d *schema.ResourceData, m i
 	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
 	_, err := c.DeleteAPIKey(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	if err.Err != nil {
+		return diag.FromErr(err.Err)
 	}
 
 	return nil
