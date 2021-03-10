@@ -23,10 +23,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
@@ -109,11 +107,10 @@ func resourceSendgridSubuserCreate(ctx context.Context, d *schema.ResourceData, 
 		ips = append(ips, ip.(string))
 	}
 
-	if err := resource.RetryContext(
-		ctx,
-		d.Timeout(schema.TimeoutCreate),
-		retrySubUserCreateClient(c, username, email, password, ips),
-	); err != nil {
+	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
+		return c.CreateSubuser(username, email, password, ips)
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -126,30 +123,12 @@ func resourceSendgridSubuserCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceSendgridSubuserRead(ctx, d, m)
 }
 
-func retrySubUserCreateClient(
-	c *sendgrid.Client,
-	username string,
-	email string,
-	password string,
-	ips []string,
-) func() *resource.RetryError {
-	return func() *resource.RetryError {
-		_, requestErr := c.CreateSubuser(username, email, password, ips)
-
-		if requestErr.Err != nil && requestErr.StatusCode == http.StatusTooManyRequests {
-			return resource.RetryableError(ErrCreateRateLimit)
-		}
-
-		if requestErr.Err != nil {
-			return resource.NonRetryableError(requestErr.Err)
-		}
-
-		return nil
-	}
-}
-
 func resourceSendgridSubuserRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
+
+	// hack to clear any on behalf of set in create sub user
+	// to fix this properly I think we need to pass this down rather than setting global state
+	c.OnBehalfOf = ""
 
 	subUser, requestErr := c.ReadSubUser(d.Id())
 	if requestErr.Err != nil {
@@ -183,29 +162,13 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 	return resourceSendgridSubuserRead(ctx, d, m)
 }
 
-func retrySubUserDeleteClient(c *sendgrid.Client, username string) func() *resource.RetryError {
-	return func() *resource.RetryError {
-		_, requestErr := c.DeleteSubuser(username)
-
-		if requestErr.Err != nil && requestErr.StatusCode == http.StatusTooManyRequests {
-			return resource.RetryableError(ErrCreateRateLimit)
-		}
-
-		if requestErr.Err != nil {
-			return resource.NonRetryableError(
-				fmt.Errorf("error creating subuser: %w", requestErr.Err),
-			)
-		}
-
-		return nil
-	}
-}
-
 func resourceSendgridSubuserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), retrySubUserDeleteClient(
-		c, d.Id())); err != nil {
+	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
+		return c.DeleteSubuser(d.Id())
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

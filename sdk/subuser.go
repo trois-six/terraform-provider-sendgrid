@@ -36,7 +36,10 @@ type subUserErrors struct {
 	Errors []subUserError `json:"errors,omitempty"`
 }
 
-var ErrFailedCreatingSubUser = errors.New("failed creating subUser")
+var (
+	ErrFailedCreatingSubUser = errors.New("failed creating subUser")
+	ErrFailedDeletingSubUser = errors.New("failed deleting subUser")
+)
 
 func parseSubUser(respBody string) (*SubUser, RequestError) {
 	var body SubUser
@@ -159,11 +162,18 @@ func (c *Client) DeleteSubuser(username string) (bool, RequestError) {
 		return false, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
 
-	if _, statusCode, err := c.Get("DELETE", "/subusers/"+username); statusCode > 299 ||
-		err != nil {
+	respBody, statusCode, err := c.Get("DELETE", "/subusers/"+username)
+	if err != nil {
 		return false, RequestError{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("failed deleting subUser: %w", err),
+		}
+	}
+
+	if statusCode >= http.StatusMultipleChoices && statusCode != http.StatusNotFound { // ignore not found
+		return false, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("%w: statusCode: %d, respBody: %s", err, statusCode, respBody),
 		}
 	}
 

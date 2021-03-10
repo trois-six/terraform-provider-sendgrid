@@ -30,6 +30,8 @@ issues:
       text: "err113: do not define dynamic errors, use wrapped static errors instead"
     - path: _test\.go
       text: "error returned from external package is unwrapped"
+    - path: _test\.go
+      text: "type assertion must be checked"
     - path: provider_test.go
       text: "testAccProvider[s]* is a global variable"
     - path: provider_test.go
