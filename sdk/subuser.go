@@ -86,7 +86,7 @@ func (c *Client) CreateSubuser(username, email, password string, ips []string) (
 }
 
 // ReadSubuser retreives a subuser and returns it.
-func (c *Client) ReadSubUser(username string) (*SubUser, RequestError) {
+func (c *Client) ReadSubUser(username string) ([]SubUser, RequestError) {
 	if username == "" {
 		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
@@ -101,9 +101,7 @@ func (c *Client) ReadSubUser(username string) (*SubUser, RequestError) {
 		}
 	}
 
-	subUsers, requestErr := parseSubUsers(respBody)
-
-	return &subUsers[0], requestErr
+	return parseSubUsers(respBody)
 }
 
 // UpdateSubuser enables/disables a subuser.

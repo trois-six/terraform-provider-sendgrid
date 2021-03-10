@@ -21,6 +21,7 @@ package sendgrid
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -29,6 +30,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
+
+var ErrSubUserNotFound = errors.New("subUser wasn't found")
 
 func resourceSendgridSubuser() *schema.Resource {
 	return &schema.Resource{
@@ -144,17 +147,21 @@ func retrySubUserCreateClient(
 func resourceSendgridSubuserRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	Subuser, requestErr := c.ReadSubUser(d.Id())
+	subUser, requestErr := c.ReadSubUser(d.Id())
 	if requestErr.Err != nil {
 		return diag.FromErr(requestErr.Err)
 	}
 
+	if len(subUser) == 0 {
+		return diag.FromErr(ErrSubUserNotFound)
+	}
+
 	//nolint:errcheck
-	d.Set("user_id", Subuser.ID)
+	d.Set("user_id", subUser[0].ID)
 	//nolint:errcheck
-	d.Set("disabled", Subuser.Disabled)
+	d.Set("disabled", subUser[0].Disabled)
 	//nolint:errcheck
-	d.Set("email", Subuser.Email)
+	d.Set("email", subUser[0].Email)
 
 	return nil
 }
