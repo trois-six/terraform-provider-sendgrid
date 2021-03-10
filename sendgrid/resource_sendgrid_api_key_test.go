@@ -40,8 +40,8 @@ func testAccCheckSendgridAPIKeyDestroy(s *terraform.State) error {
 		apiKeyID := rs.Primary.ID
 
 		_, err := c.DeleteAPIKey(apiKeyID)
-		if err != nil {
-			return err
+		if err.Err != nil {
+			return err.Err
 		}
 	}
 

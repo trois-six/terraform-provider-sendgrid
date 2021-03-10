@@ -33,6 +33,10 @@ import (
 
 var ErrSubUserNotFound = errors.New("subUser wasn't found")
 
+func subUserNotFound(name string) error {
+	return fmt.Errorf("%w: %s", ErrSubUserNotFound, name)
+}
+
 func resourceSendgridSubuser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceSendgridSubuserCreate,
@@ -153,7 +157,7 @@ func resourceSendgridSubuserRead(_ context.Context, d *schema.ResourceData, m in
 	}
 
 	if len(subUser) == 0 {
-		return diag.FromErr(ErrSubUserNotFound)
+		return diag.FromErr(subUserNotFound(d.Id()))
 	}
 
 	//nolint:errcheck

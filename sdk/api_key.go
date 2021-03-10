@@ -2,7 +2,9 @@ package sendgrid
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 )
 
 // APIKey is a Sendgrid API key.
@@ -13,50 +15,80 @@ type APIKey struct {
 	Scopes []string `json:"scopes,omitempty"`
 }
 
-func parseAPIKey(respBody string) (*APIKey, error) {
+var (
+	ErrFailedCreatingAPIKey = errors.New("failed creating apiKey")
+	ErrFailedDeletingAPIKey = errors.New("failed deleting apiKey")
+)
+
+func parseAPIKey(respBody string) (*APIKey, RequestError) {
 	var body APIKey
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
-		return nil, fmt.Errorf("failed parsing API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing API key: %w", err),
+		}
 	}
 
-	return &body, nil
+	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
 // CreateAPIKey creates an APIKey and returns it.
-func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, error) {
+func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, RequestError) {
 	if name == "" {
-		return nil, ErrNameRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrNameRequired,
+		}
 	}
 
-	respBody, _, err := c.Post("POST", "/api_keys", APIKey{
+	respBody, statusCode, err := c.Post("POST", "/api_keys", APIKey{
 		Name:   name,
 		Scopes: scopes,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed creating API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed creating API key: %w", err),
+		}
+	}
+
+	if statusCode >= http.StatusMultipleChoices {
+		return nil, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedCreatingAPIKey, statusCode, respBody),
+		}
 	}
 
 	return parseAPIKey(respBody)
 }
 
 // ReadAPIKey retreives an APIKey and returns it.
-func (c *Client) ReadAPIKey(id string) (*APIKey, error) {
+func (c *Client) ReadAPIKey(id string) (*APIKey, RequestError) {
 	if id == "" {
-		return nil, ErrAPIKeyIDRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
 	respBody, _, err := c.Get("GET", "/api_keys/"+id)
 	if err != nil {
-		return nil, fmt.Errorf("failed reading API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
 	}
 
 	return parseAPIKey(respBody)
 }
 
 // UpdateAPIKey edits an APIKey and returns it.
-func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, error) {
+func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, RequestError) {
 	if id == "" {
-		return nil, ErrAPIKeyIDRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
 	t := APIKey{}
@@ -70,21 +102,38 @@ func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, error)
 
 	respBody, _, err := c.Post("PUT", "/api_keys/"+id, t)
 	if err != nil {
-		return nil, fmt.Errorf("failed updating API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
 	}
 
 	return parseAPIKey(respBody)
 }
 
 // DeleteAPIKey deletes an APIKey.
-func (c *Client) DeleteAPIKey(id string) (bool, error) {
+func (c *Client) DeleteAPIKey(id string) (bool, RequestError) {
 	if id == "" {
-		return false, ErrAPIKeyIDRequired
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
-	if _, statusCode, err := c.Get("DELETE", "/api_keys/"+id); statusCode > 299 || err != nil {
-		return false, fmt.Errorf("failed deleting API key: %w", err)
+	responseBody, statusCode, err := c.Get("DELETE", "/api_keys/"+id)
+	if err != nil {
+		return false, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
 	}
 
-	return true, nil
+	if statusCode >= http.StatusMultipleChoices && statusCode != http.StatusNotFound { // ignore not found
+		return false, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedDeletingAPIKey, statusCode, responseBody),
+		}
+	}
+
+	return true, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
