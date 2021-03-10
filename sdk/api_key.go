@@ -2,6 +2,7 @@ package sendgrid
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -13,6 +14,11 @@ type APIKey struct {
 	Name   string   `json:"name,omitempty"`
 	Scopes []string `json:"scopes,omitempty"`
 }
+
+var (
+	ErrFailedCreatingAPIKey = errors.New("failed creating apiKey")
+	ErrFailedDeletingAPIKey = errors.New("failed deleting apiKey")
+)
 
 func parseAPIKey(respBody string) (*APIKey, RequestError) {
 	var body APIKey
@@ -46,10 +52,10 @@ func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, RequestErr
 		}
 	}
 
-	if statusCode >= 300 {
+	if statusCode >= http.StatusMultipleChoices {
 		return nil, RequestError{
 			StatusCode: statusCode,
-			Err:        fmt.Errorf("failed creating apiKey, status: %d, response: %s", statusCode, respBody),
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedCreatingAPIKey, statusCode, respBody),
 		}
 	}
 
@@ -69,7 +75,7 @@ func (c *Client) ReadAPIKey(id string) (*APIKey, RequestError) {
 	if err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed reading API key: %w", err),
+			Err:        err,
 		}
 	}
 
@@ -98,7 +104,7 @@ func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, Reques
 	if err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed updating API key: %w", err),
+			Err:        err,
 		}
 	}
 
@@ -115,18 +121,17 @@ func (c *Client) DeleteAPIKey(id string) (bool, RequestError) {
 	}
 
 	responseBody, statusCode, err := c.Get("DELETE", "/api_keys/"+id)
-
 	if err != nil {
 		return false, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed deleting API key: %w", err),
+			Err:        err,
 		}
 	}
 
-	if statusCode >= 300 && statusCode != 404 { // ignore not found
+	if statusCode >= http.StatusMultipleChoices && statusCode != http.StatusNotFound { // ignore not found
 		return false, RequestError{
 			StatusCode: statusCode,
-			Err:        fmt.Errorf("failed deleting API key, status: %d, response: %s", statusCode, responseBody),
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedDeletingAPIKey, statusCode, responseBody),
 		}
 	}
 

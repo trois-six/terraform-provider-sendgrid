@@ -2,6 +2,7 @@ package sendgrid
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,13 +36,16 @@ type subUserErrors struct {
 	Errors []subUserError `json:"errors,omitempty"`
 }
 
+var ErrFailedCreatingSubUser = errors.New("failed creating subUser")
+
 func parseSubUser(respBody string) (*SubUser, RequestError) {
 	var body SubUser
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
 		log.Printf("[DEBUG] [parseSubUser] failed parsing subUser, response body: %s", respBody)
+
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed parsing subUsers: %w", err),
+			Err:        err,
 		}
 	}
 
@@ -52,9 +56,10 @@ func parseSubUsers(respBody string) ([]SubUser, RequestError) {
 	var body []SubUser
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
 		log.Printf("[DEBUG] [parseSubUsers] failed parsing subUsers, response body: %s", respBody)
+
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed parsing subUsers: %w", err),
+			Err:        err,
 		}
 	}
 
@@ -92,10 +97,10 @@ func (c *Client) CreateSubuser(username, email, password string, ips []string) (
 		}
 	}
 
-	if statusCode >= 300 {
+	if statusCode >= http.StatusMultipleChoices {
 		return nil, RequestError{
 			StatusCode: statusCode,
-			Err:        fmt.Errorf("failed creating subUser, status: %d, response: %s", statusCode, respBody),
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedCreatingSubUser, statusCode, respBody),
 		}
 	}
 
