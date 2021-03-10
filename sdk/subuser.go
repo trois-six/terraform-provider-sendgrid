@@ -52,10 +52,7 @@ func parseSubUsers(respBody string) ([]SubUser, RequestError) {
 }
 
 // CreateSubuser creates a subuser and returns it.
-func (c *Client) CreateSubuser(
-	username, email, password string,
-	ips []string,
-) (*SubUser, RequestError) {
+func (c *Client) CreateSubuser(username, email, password string, ips []string) ([]SubUser, RequestError) {
 	if username == "" {
 		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
@@ -85,9 +82,7 @@ func (c *Client) CreateSubuser(
 		}
 	}
 
-	subUsers, requestErr := parseSubUsers(respBody)
-
-	return &subUsers[0], requestErr
+	return parseSubUsers(respBody)
 }
 
 // ReadSubuser retreives a subuser and returns it.
