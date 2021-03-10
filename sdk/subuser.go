@@ -3,17 +3,13 @@ package sendgrid
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 )
 
 type creditAllocation struct {
 	Type string `json:"credit_allocation,omitempty"`
-}
-
-type RequestError struct {
-	StatusCode int
-	Err        error
 }
 
 // SubUser is a Sendgrid SubUser.
@@ -39,9 +35,23 @@ type subUserErrors struct {
 	Errors []subUserError `json:"errors,omitempty"`
 }
 
+func parseSubUser(respBody string) (*SubUser, RequestError) {
+	var body SubUser
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		log.Printf("[DEBUG] [parseSubUser] failed parsing subUser, response body: %s", respBody)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing subUsers: %w", err),
+		}
+	}
+
+	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
 func parseSubUsers(respBody string) ([]SubUser, RequestError) {
 	var body []SubUser
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		log.Printf("[DEBUG] [parseSubUsers] failed parsing subUsers, response body: %s", respBody)
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("failed parsing subUsers: %w", err),
@@ -52,7 +62,7 @@ func parseSubUsers(respBody string) ([]SubUser, RequestError) {
 }
 
 // CreateSubuser creates a subuser and returns it.
-func (c *Client) CreateSubuser(username, email, password string, ips []string) ([]SubUser, RequestError) {
+func (c *Client) CreateSubuser(username, email, password string, ips []string) (*SubUser, RequestError) {
 	if username == "" {
 		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
 	}
@@ -75,14 +85,21 @@ func (c *Client) CreateSubuser(username, email, password string, ips []string) (
 		Password: password,
 		IPs:      ips,
 	})
-	if err != nil || statusCode >= 300 {
+	if err != nil {
 		return nil, RequestError{
 			StatusCode: statusCode,
 			Err:        fmt.Errorf("failed creating subUser: %w", err),
 		}
 	}
 
-	return parseSubUsers(respBody)
+	if statusCode >= 300 {
+		return nil, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("failed creating subUser, status: %d, response: %s", statusCode, respBody),
+		}
+	}
+
+	return parseSubUser(respBody)
 }
 
 // ReadSubuser retreives a subuser and returns it.

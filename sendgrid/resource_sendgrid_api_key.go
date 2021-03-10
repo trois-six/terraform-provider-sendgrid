@@ -94,8 +94,8 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	apiKey, err := c.CreateAPIKey(name, scopes)
-	if err != nil {
-		return diag.FromErr(err)
+	if err.Err != nil {
+		return diag.FromErr(err.Err)
 	}
 
 	d.SetId(apiKey.ID)
@@ -111,8 +111,8 @@ func resourceSendgridAPIKeyRead(_ context.Context, d *schema.ResourceData, m int
 	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
 	apiKey, err := c.ReadAPIKey(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	if err.Err != nil {
+		return diag.FromErr(err.Err)
 	}
 
 	//nolint:errcheck
@@ -154,8 +154,8 @@ func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m
 		a.Scopes = scopes
 	}
 
-	if _, err := c.UpdateAPIKey(d.Id(), a.Name, a.Scopes); err != nil {
-		return diag.FromErr(err)
+	if _, err := c.UpdateAPIKey(d.Id(), a.Name, a.Scopes); err.Err != nil {
+		return diag.FromErr(err.Err)
 	}
 
 	return resourceSendgridAPIKeyRead(ctx, d, m)

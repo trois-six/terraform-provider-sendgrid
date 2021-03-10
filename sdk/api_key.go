@@ -3,6 +3,7 @@ package sendgrid
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 // APIKey is a Sendgrid API key.
@@ -13,50 +14,75 @@ type APIKey struct {
 	Scopes []string `json:"scopes,omitempty"`
 }
 
-func parseAPIKey(respBody string) (*APIKey, error) {
+func parseAPIKey(respBody string) (*APIKey, RequestError) {
 	var body APIKey
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
-		return nil, fmt.Errorf("failed parsing API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing API key: %w", err),
+		}
 	}
 
-	return &body, nil
+	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
 // CreateAPIKey creates an APIKey and returns it.
-func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, error) {
+func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, RequestError) {
 	if name == "" {
-		return nil, ErrNameRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrNameRequired,
+		}
 	}
 
-	respBody, _, err := c.Post("POST", "/api_keys", APIKey{
+	respBody, statusCode, err := c.Post("POST", "/api_keys", APIKey{
 		Name:   name,
 		Scopes: scopes,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed creating API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed creating API key: %w", err),
+		}
+	}
+
+	if statusCode >= 300 {
+		return nil, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("failed creating apiKey, status: %d, response: %s", statusCode, respBody),
+		}
 	}
 
 	return parseAPIKey(respBody)
 }
 
 // ReadAPIKey retreives an APIKey and returns it.
-func (c *Client) ReadAPIKey(id string) (*APIKey, error) {
+func (c *Client) ReadAPIKey(id string) (*APIKey, RequestError) {
 	if id == "" {
-		return nil, ErrAPIKeyIDRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
 	respBody, _, err := c.Get("GET", "/api_keys/"+id)
 	if err != nil {
-		return nil, fmt.Errorf("failed reading API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed reading API key: %w", err),
+		}
 	}
 
 	return parseAPIKey(respBody)
 }
 
 // UpdateAPIKey edits an APIKey and returns it.
-func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, error) {
+func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, RequestError) {
 	if id == "" {
-		return nil, ErrAPIKeyIDRequired
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        ErrAPIKeyIDRequired,
+		}
 	}
 
 	t := APIKey{}
@@ -70,7 +96,10 @@ func (c *Client) UpdateAPIKey(id, name string, scopes []string) (*APIKey, error)
 
 	respBody, _, err := c.Post("PUT", "/api_keys/"+id, t)
 	if err != nil {
-		return nil, fmt.Errorf("failed updating API key: %w", err)
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed updating API key: %w", err),
+		}
 	}
 
 	return parseAPIKey(respBody)

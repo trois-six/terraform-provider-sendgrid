@@ -16,3 +16,8 @@ var (
 	ErrTemplateVersionNameRequired    = errors.New("a template version name is required")
 	ErrTemplateVersionSubjectRequired = errors.New("a template version subject is required")
 )
+
+type RequestError struct {
+	StatusCode int
+	Err        error
+}
