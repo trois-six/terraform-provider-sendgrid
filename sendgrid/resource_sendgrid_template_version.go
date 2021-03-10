@@ -65,9 +65,9 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 			},
 			"active": {
 				Type: schema.TypeInt,
-				Description: `Set the version as the active version associated with the template. 
-							  Only one version of a template can be active. 
-							  The first version created for a template will automatically be set to Active. Allowed values: 0, 1.`,
+				Description: "Set the version as the active version associated with the template. " +
+					"Only one version of a template can be active. " +
+					"The first version created for a template will automatically be set to Active. Allowed values: 0, 1.",
 				Optional: true,
 			},
 			"name": {
@@ -87,8 +87,8 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 			},
 			"generate_plain_content": {
 				Type: schema.TypeBool,
-				Description: `If true (default), plain_content is always generated from html_content. 
-							  If false, plain_content is not altered.`,
+				Description: "If true (default), plain_content is always generated from html_content. " +
+					"If false, plain_content is not altered.",
 				Optional: true,
 				Default:  true,
 			},
@@ -106,8 +106,8 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 			},
 			"test_data": {
 				Type: schema.TypeString,
-				Description: `For dynamic templates only, 
-				              the mock json data that will be used for template preview and test sends.`,
+				Description: "For dynamic templates only, " +
+					"the mock json data that will be used for template preview and test sends.",
 				Optional: true,
 			},
 		},
