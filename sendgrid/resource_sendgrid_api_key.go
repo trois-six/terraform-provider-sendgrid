@@ -89,10 +89,6 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 		scopes = append(scopes, "sender_verification_eligible")
 	}
 
-	if ok := scopeInScopes(scopes, "2fa_required"); !ok {
-		scopes = append(scopes, "2fa_required")
-	}
-
 	apiKey, err := c.CreateAPIKey(name, scopes)
 	if err.Err != nil {
 		return diag.FromErr(err.Err)
