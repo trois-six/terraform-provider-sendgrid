@@ -23,6 +23,9 @@ linters:
     - tparallel
     - paralleltest
     - exhaustivestruct
+    - interfacer
+    - maligned
+    - forcetypeassert
 
 issues:
   exclude-rules:

@@ -57,14 +57,14 @@ func Provider() *schema.Provider {
 func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	apiKey := d.Get("api_key").(string)
-	if apiKey == "" {
+	apiKey, ok := d.Get("api_key").(string)
+	if apiKey == "" || !ok {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Sendgrid API key wasn't provided",
-			Detail: `Unable to retrieve the API key, 
-			           either from the configuration of the provider, 
-					   nor the env variable SENDGRID_API_KEY`,
+			Detail: "Unable to retrieve the API key, " +
+				"either from the configuration of the provider, " +
+				"nor the env variable SENDGRID_API_KEY",
 		})
 
 		return nil, diags
