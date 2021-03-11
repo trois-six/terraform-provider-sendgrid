@@ -89,9 +89,14 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 		scopes = append(scopes, "sender_verification_eligible")
 	}
 
-	apiKey, err := c.CreateAPIKey(name, scopes)
-	if err.Err != nil {
-		return diag.FromErr(err.Err)
+	apiKeyStruct, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
+		return c.CreateAPIKey(name, scopes)
+	})
+
+	apiKey := apiKeyStruct.(*sendgrid.APIKey)
+
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(apiKey.ID)
@@ -150,21 +155,26 @@ func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m
 		a.Scopes = scopes
 	}
 
-	if _, err := c.UpdateAPIKey(d.Id(), a.Name, a.Scopes); err.Err != nil {
-		return diag.FromErr(err.Err)
+	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
+		return c.UpdateAPIKey(d.Id(), a.Name, a.Scopes)
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceSendgridAPIKeyRead(ctx, d, m)
 }
 
-func resourceSendgridAPIKeyDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
 
-	_, err := c.DeleteAPIKey(d.Id())
-	if err.Err != nil {
-		return diag.FromErr(err.Err)
+	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
+		return c.DeleteAPIKey(d.Id())
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
