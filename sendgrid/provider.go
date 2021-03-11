@@ -58,7 +58,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	var diags diag.Diagnostics
 
 	apiKey, ok := d.Get("api_key").(string)
-	if apiKey == "" || !ok {
+	if !ok || apiKey == "" {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Sendgrid API key wasn't provided",
