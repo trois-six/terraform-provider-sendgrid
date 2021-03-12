@@ -2,7 +2,7 @@
     <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" alt="Terraform logo" title="Terraform" align="right" height="50" />
 </a>
 
-# Terraform Provider for Sendgrid
+# Terraform Provider for [Sendgrid](https://sendgrid.com)
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
