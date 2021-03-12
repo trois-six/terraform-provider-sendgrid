@@ -2,7 +2,6 @@ package sendgrid
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 )
@@ -14,11 +13,6 @@ type APIKey struct {
 	Name   string   `json:"name,omitempty"`
 	Scopes []string `json:"scopes,omitempty"`
 }
-
-var (
-	ErrFailedCreatingAPIKey = errors.New("failed creating apiKey")
-	ErrFailedDeletingAPIKey = errors.New("failed deleting apiKey")
-)
 
 func parseAPIKey(respBody string) (*APIKey, RequestError) {
 	var body APIKey

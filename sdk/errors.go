@@ -11,25 +11,72 @@ import (
 )
 
 var (
-	ErrNameRequired                   = errors.New("a name is required")
-	ErrAPIKeyIDRequired               = errors.New("an API Key ID is required")
-	ErrBodyNotNil                     = errors.New("body must not be nil")
-	ErrUsernameRequired               = errors.New("a username is required")
-	ErrEmailRequired                  = errors.New("an email is required")
-	ErrPasswordRequired               = errors.New("a password is required")
-	ErrIPRequired                     = errors.New("at least one ip address is required")
-	ErrTemplateIDRequired             = errors.New("a template ID is required")
-	ErrTemplateNameRequired           = errors.New("a template name is required")
-	ErrTemplateVersionIDRequired      = errors.New("a template version ID is required")
-	ErrTemplateVersionNameRequired    = errors.New("a template version name is required")
+	// ErrBodyNotNil low error displayed when the prepared body for a POST call
+	// to the API is nil.
+	ErrBodyNotNil = errors.New("body must not be nil")
+
+	// ErrNameRequired error displayed when an api key name wasn't specified.
+	ErrNameRequired = errors.New("a name is required")
+
+	// ErrAPIKeyIDRequired error displayed when an api key ID wasn't specified.
+	ErrAPIKeyIDRequired = errors.New("an API Key ID is required")
+
+	// ErrFailedCreatingAPIKey error displayed when the provider can not create an api key.
+	ErrFailedCreatingAPIKey = errors.New("failed creating apiKey")
+
+	// ErrFailedDeletingAPIKey error displayed when the provider can not delete an api key.
+	ErrFailedDeletingAPIKey = errors.New("failed deleting apiKey")
+
+	// ErrUsernameRequired error displayed when a subUser username wasn't specified.
+	ErrUsernameRequired = errors.New("a username is required")
+
+	// ErrEmailRequired error displayed when a subUser email wasn't specified.
+	ErrEmailRequired = errors.New("an email is required")
+
+	// ErrPasswordRequired error displayed when a subUser password wasn't specified.
+	ErrPasswordRequired = errors.New("a password is required")
+
+	// ErrIPRequired error displayed when at least one IP per subUser wasn't specified.
+	ErrIPRequired = errors.New("at least one ip address is required")
+
+	// ErrFailedCreatingSubUser error displayed when the provider can not create a subuser.
+	ErrFailedCreatingSubUser = errors.New("failed creating subUser")
+
+	// ErrFailedDeletingSubUser error displayed when the provider can not delete a subuser.
+	ErrFailedDeletingSubUser = errors.New("failed deleting subUser")
+
+	// ErrTemplateIDRequired error displayed when a template ID wasn't specified.
+	ErrTemplateIDRequired = errors.New("a template ID is required")
+
+	// ErrTemplateNameRequired error displayed when a template name wasn't specified.
+	ErrTemplateNameRequired = errors.New("a template name is required")
+
+	// ErrTemplateVersionIDRequired error displayed when a template version ID wasn't specified.
+	ErrTemplateVersionIDRequired = errors.New("a template version ID is required")
+
+	// ErrTemplateVersionNameRequired error displayed when a template version ID wasn't specified.
+	ErrTemplateVersionNameRequired = errors.New("a template version name is required")
+
+	// ErrTemplateVersionSubjectRequired error displayed when a template version subject wasn't specified.
 	ErrTemplateVersionSubjectRequired = errors.New("a template version subject is required")
 )
 
+// RequestError struct permits to embed to return the statucode and the error to the parent function.
 type RequestError struct {
 	StatusCode int
 	Err        error
 }
 
+type subUserError struct {
+	Field   string `json:"field,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+type subUserErrors struct {
+	Errors []subUserError `json:"errors,omitempty"`
+}
+
+// RetryOnRateLimit management of RequestErrors, and launch a retry if needed.
 func RetryOnRateLimit(
 	ctx context.Context, d *schema.ResourceData, f func() (interface{}, RequestError)) (interface{}, error) {
 	var resp interface{}

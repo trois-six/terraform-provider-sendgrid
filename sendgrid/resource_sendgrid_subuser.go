@@ -21,19 +21,11 @@ package sendgrid
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
-
-var ErrSubUserNotFound = errors.New("subUser wasn't found")
-
-func subUserNotFound(name string) error {
-	return fmt.Errorf("%w: %s", ErrSubUserNotFound, name)
-}
 
 func resourceSendgridSubuser() *schema.Resource {
 	return &schema.Resource{

@@ -2,7 +2,6 @@ package sendgrid
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,20 +25,6 @@ type SubUser struct {
 	AuthorizationToken string           `json:"authorization_token,omitempty"`
 	CreditAllocation   creditAllocation `json:"credit_allocation,omitempty"`
 }
-
-type subUserError struct {
-	Field   string `json:"field,omitempty"`
-	Message string `json:"message,omitempty"`
-}
-
-type subUserErrors struct {
-	Errors []subUserError `json:"errors,omitempty"`
-}
-
-var (
-	ErrFailedCreatingSubUser = errors.New("failed creating subUser")
-	ErrFailedDeletingSubUser = errors.New("failed deleting subUser")
-)
 
 func parseSubUser(respBody string) (*SubUser, RequestError) {
 	var body SubUser
@@ -110,7 +95,7 @@ func (c *Client) CreateSubuser(username, email, password string, ips []string) (
 	return parseSubUser(respBody)
 }
 
-// ReadSubuser retreives a subuser and returns it.
+// ReadSubUser retreives a subuser and returns it.
 func (c *Client) ReadSubUser(username string) ([]SubUser, RequestError) {
 	if username == "" {
 		return nil, RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}

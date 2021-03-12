@@ -35,6 +35,8 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
+// ImportSplitParts is the expected length of
+// the splitted import string for template versions.
 const ImportSplitParts = 2
 
 func resourceSendgridTemplateVersion() *schema.Resource {
