@@ -12,7 +12,7 @@ resource "sendgrid_parse_webhook" "default" {
 Import
 An unsubscribe webhook can be imported, e.g.
 ```hcl
-$ terraform import sendgrid_parse_webhook.default unsubscribeGroupID
+$ terraform import sendgrid_parse_webhook.default hostname
 ```
 */
 package sendgrid

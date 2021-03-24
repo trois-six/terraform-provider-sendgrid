@@ -113,6 +113,7 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "This secret is needed only once to create an access token. SendGrid will store this secret, allowing you to update your Client ID and Token URL without passing the secret to SendGrid again. When passing data in this field, you must also include the oauth_client_id and oauth_token_url fields.",
 				Optional:    true,
+				Sensitive:   true,
 			},
 			"oauth_token_url": {
 				Type:        schema.TypeString,
