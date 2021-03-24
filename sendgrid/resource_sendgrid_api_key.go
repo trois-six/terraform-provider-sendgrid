@@ -80,7 +80,10 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 
 	c := m.(*sendgrid.Client)
 	name := d.Get("name").(string)
-	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
+	onBehalfOf := d.Get("sub_user_on_behalf_of").(string)
+	if len(onBehalfOf) > 0 {
+		c.OnBehalfOf = onBehalfOf
+	}
 
 	for _, scope := range d.Get("scopes").(*schema.Set).List() {
 		scopes = append(scopes, scope.(string))
@@ -136,7 +139,10 @@ func hasDiff(o, n interface{}) bool {
 func resourceSendgridAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
+	onBehalfOf := d.Get("sub_user_on_behalf_of").(string)
+	if len(onBehalfOf) > 0 {
+		c.OnBehalfOf = onBehalfOf
+	}
 
 	a := sendgrid.APIKey{
 		ID:   d.Id(),

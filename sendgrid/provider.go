@@ -44,10 +44,13 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"sendgrid_api_key":          resourceSendgridAPIKey(),
-			"sendgrid_subuser":          resourceSendgridSubuser(),
-			"sendgrid_template":         resourceSendgridTemplate(),
-			"sendgrid_template_version": resourceSendgridTemplateVersion(),
+			"sendgrid_api_key":           resourceSendgridAPIKey(),
+			"sendgrid_subuser":           resourceSendgridSubuser(),
+			"sendgrid_template":          resourceSendgridTemplate(),
+			"sendgrid_template_version":  resourceSendgridTemplateVersion(),
+			"sendgrid_unsubscribe_group": resourceSendgridUnsubscribeGroup(),
+			"sendgrid_parse_webhook":     resourceSendgridParseWebhook(),
+			"sendgrid_event_webhook":     resourceSendgridEventWebhook(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

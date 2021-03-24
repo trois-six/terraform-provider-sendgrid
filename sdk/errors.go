@@ -59,6 +59,22 @@ var (
 
 	// ErrTemplateVersionSubjectRequired error displayed when a template version subject wasn't specified.
 	ErrTemplateVersionSubjectRequired = errors.New("a template version subject is required")
+
+	ErrFailedCreatingUnsubscribeGroup = errors.New("failed to create unsubscribe list")
+
+	ErrUnsubscribeGroupIDRequired = errors.New("unsubscribe list id is required")
+
+	ErrFailedDeletingUnsubscribeGroup = errors.New("failed deleting unsubscribe list")
+
+	ErrFailedCreatingParseWebhook = errors.New("failed to create parse webhook")
+
+	ErrFailedDeletingParseWebhook = errors.New("failed deleting parse webhook")
+
+	ErrHostnameRequired = errors.New("a hostname is required")
+
+	ErrUrlRequired = errors.New("a url is required")
+
+	ErrFailedPatchingEventWebhook = errors.New("failed to patch event webhook")
 )
 
 // RequestError struct permits to embed to return the statucode and the error to the parent function.
