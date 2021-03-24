@@ -8,7 +8,7 @@ import (
 
 // UnsubscribeGroup is a Sendgrid - Suppressions - Unsubscribe Group
 type UnsubscribeGroup struct {
-	ID           string `json:"id,omitempty"`
+	ID           int32  `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	Description  string `json:"description,omitempty"`
 	IsDefault    bool   `json:"is_default"`

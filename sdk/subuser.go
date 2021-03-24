@@ -18,6 +18,7 @@ type SubUser struct {
 	UserID             int              `json:"user_id,omitempty"`
 	UserName           string           `json:"username,omitempty"`
 	Password           string           `json:"password,omitempty"`
+	ConfirmPassword    string           `json:"confirm_password,omitempty"`
 	Email              string           `json:"email,omitempty"`
 	IPs                []string         `json:"ips,omitempty"`
 	Disabled           bool             `json:"disabled,omitempty"`
@@ -73,10 +74,11 @@ func (c *Client) CreateSubuser(username, email, password string, ips []string) (
 	}
 
 	respBody, statusCode, err := c.Post("POST", "/subusers", SubUser{
-		UserName: username,
-		Email:    email,
-		Password: password,
-		IPs:      ips,
+		UserName:        username,
+		Email:           email,
+		Password:        password,
+		ConfirmPassword: password,
+		IPs:             ips,
 	})
 	if err != nil {
 		return nil, RequestError{

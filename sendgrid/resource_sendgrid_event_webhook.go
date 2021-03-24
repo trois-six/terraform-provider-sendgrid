@@ -37,6 +37,7 @@ func resourceSendgridEventWebhook() *schema.Resource {
 		CreateContext: resourceSendgridEventWebhookPatch,
 		ReadContext:   resourceSendgridEventWebhookRead,
 		UpdateContext: resourceSendgridEventWebhookPatch,
+		DeleteContext: resourceSendgridEventWebhookDelete,
 
 		Schema: map[string]*schema.Schema{
 			"enabled": {
@@ -122,6 +123,11 @@ func resourceSendgridEventWebhook() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceSendgridEventWebhookDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// no op as there is no way to delete it
+	return nil
 }
 
 func resourceSendgridEventWebhookPatch(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

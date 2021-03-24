@@ -113,7 +113,10 @@ func resourceSendgridAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m
 func resourceSendgridAPIKeyRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	c.OnBehalfOf = d.Get("sub_user_on_behalf_of").(string)
+	onBehalfOf := d.Get("sub_user_on_behalf_of").(string)
+	if len(onBehalfOf) > 0 {
+		c.OnBehalfOf = onBehalfOf
+	}
 
 	apiKey, err := c.ReadAPIKey(d.Id())
 	if err.Err != nil {
