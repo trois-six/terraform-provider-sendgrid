@@ -27,6 +27,18 @@ func parseUnsubscribeGroup(respBody string) (*UnsubscribeGroup, RequestError) {
 	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
+func parseUnsubscribeGroups(respBody string) ([]UnsubscribeGroup, RequestError) {
+	var body []UnsubscribeGroup
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing API key: %w", err),
+		}
+	}
+
+	return body, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
 // CreateUnsubscribeGroup creates an UnsubscribeGroup and returns it.
 func (c *Client) CreateUnsubscribeGroup(name string, description string, isDefault bool) (*UnsubscribeGroup, RequestError) {
 	if name == "" {
@@ -76,6 +88,20 @@ func (c *Client) ReadUnsubscribeGroup(id string) (*UnsubscribeGroup, RequestErro
 	}
 
 	return parseUnsubscribeGroup(respBody)
+}
+
+// ReadUnsubscribeGroups retrieves all UnsubscribeGroup and returns them.
+func (c *Client) ReadUnsubscribeGroups() ([]UnsubscribeGroup, RequestError) {
+
+	respBody, _, err := c.Get("GET", "/asm/groups")
+	if err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
+	}
+
+	return parseUnsubscribeGroups(respBody)
 }
 
 // UpdateUnsubscribeGroup edits an UnsubscribeGroup and returns it.

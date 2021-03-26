@@ -15,6 +15,10 @@ type Template struct {
 	Warnings   []string          `json:"warnings,omitempty"`
 }
 
+type Templates struct {
+	Result []Template `json:"result"`
+}
+
 func parseTemplate(respBody string) (*Template, error) {
 	var body Template
 
@@ -24,6 +28,17 @@ func parseTemplate(respBody string) (*Template, error) {
 	}
 
 	return &body, nil
+}
+
+func parseTemplates(respBody string) ([]Template, error) {
+	var body Templates
+
+	err := json.Unmarshal([]byte(respBody), &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing template: %w", err)
+	}
+
+	return body.Result, nil
 }
 
 // CreateTemplate creates a transactional template and returns it.
@@ -59,6 +74,14 @@ func (c *Client) ReadTemplate(id string) (*Template, error) {
 	}
 
 	return parseTemplate(respBody)
+}
+
+func (c *Client) ReadTemplates(generation string) ([]Template, error) {
+	respBody, _, err := c.Get("GET", "/templates?page_size=200&generations="+generation)
+	if err != nil {
+		return nil, fmt.Errorf("failed reading template: %w", err)
+	}
+	return parseTemplates(respBody)
 }
 
 // UpdateTemplate edits a transactional template and returns it.

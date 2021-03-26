@@ -143,6 +143,21 @@ func (c *Client) UpdateSubuser(username string, disabled bool) (bool, RequestErr
 	return len(body.Errors) == 0, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
+func (c *Client) UpdateSubuserIPs(username string, ips []string) RequestError {
+	if username == "" {
+		return RequestError{StatusCode: http.StatusNotAcceptable, Err: ErrUsernameRequired}
+	}
+
+	_, statusCode, err := c.Post("PUT", "/subusers/"+username+"/ips", ips)
+	if err != nil {
+		return RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("failed updating subUser Ips: %w", err),
+		}
+	}
+	return RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
 // DeleteSubuser deletes a subuser.
 func (c *Client) DeleteSubuser(username string) (bool, RequestError) {
 	if username == "" {

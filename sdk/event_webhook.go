@@ -47,7 +47,7 @@ func (c *Client) PatchEventWebhook(enabled bool, url string, groupResubscribe bo
 		}
 	}
 
-	respBody, statusCode, err := c.Post("POST", "/user/webhooks/parse/settings", EventWebhook{
+	respBody, statusCode, err := c.Post("PATCH", "/user/webhooks/event/settings", EventWebhook{
 		Enabled:           enabled,
 		Url:               url,
 		GroupResubscribe:  groupResubscribe,
@@ -84,7 +84,7 @@ func (c *Client) PatchEventWebhook(enabled bool, url string, groupResubscribe bo
 
 // ReadEventWebhook retreives an EventWebhook and returns it.
 func (c *Client) ReadEventWebhook() (*EventWebhook, RequestError) {
-	respBody, _, err := c.Get("GET", "/user/webhooks/parse/settings")
+	respBody, _, err := c.Get("GET", "/user/webhooks/event/settings")
 	if err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,

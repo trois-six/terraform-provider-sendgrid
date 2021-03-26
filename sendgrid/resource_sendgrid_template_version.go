@@ -86,6 +86,7 @@ func resourceSendgridTemplateVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Text/plain content of the transactional template version, maximum of 1048576 bytes allowed.",
 				Computed:    true,
+				Optional:    true,
 			},
 			"generate_plain_content": {
 				Type: schema.TypeBool,
@@ -148,27 +149,43 @@ func resourceSendgridTemplateVersionRead(_ context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	//nolint:errcheck
-	d.Set("updated_at", templateVersion.UpdatedAt)
-	//nolint:errcheck
-	d.Set("thumbnail_url", templateVersion.ThumbnailURL)
-	//nolint:errcheck
-	d.Set("active", templateVersion.Active)
-	//nolint:errcheck
-	d.Set("name", templateVersion.Name)
-	//nolint:errcheck
-	d.Set("html_content", templateVersion.HTMLContent)
-	//nolint:errcheck
-	d.Set("plain_content", templateVersion.PlainContent)
-	//nolint:errcheck
-	d.Set("generate_plain_content", templateVersion.GeneratePlainContent)
-	//nolint:errcheck
-	d.Set("subject", templateVersion.Subject)
-	//nolint:errcheck
-	d.Set("editor", templateVersion.Editor)
-	//nolint:errcheck
-	d.Set("test_data", templateVersion.TestData)
+	if er := parseTemplateVersion(d, templateVersion); er != nil {
+		return diag.FromErr(er)
+	}
+	return nil
+}
 
+func parseTemplateVersion(d *schema.ResourceData, templateVersion *sendgrid.TemplateVersion) error {
+	if err := d.Set("updated_at", templateVersion.UpdatedAt); err != nil {
+		return err
+	}
+	if err := d.Set("thumbnail_url", templateVersion.ThumbnailURL); err != nil {
+		return err
+	}
+	if err := d.Set("active", templateVersion.Active); err != nil {
+		return err
+	}
+	if err := d.Set("name", templateVersion.Name); err != nil {
+		return err
+	}
+	if err := d.Set("html_content", templateVersion.HTMLContent); err != nil {
+		return err
+	}
+	if err := d.Set("plain_content", templateVersion.PlainContent); err != nil {
+		return err
+	}
+	if err := d.Set("generate_plain_content", templateVersion.GeneratePlainContent); err != nil {
+		return err
+	}
+	if err := d.Set("subject", templateVersion.Subject); err != nil {
+		return err
+	}
+	if err := d.Set("editor", templateVersion.Editor); err != nil {
+		return err
+	}
+	if err := d.Set("test_data", templateVersion.TestData); err != nil {
+		return err
+	}
 	return nil
 }
 

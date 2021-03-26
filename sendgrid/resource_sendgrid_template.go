@@ -80,14 +80,22 @@ func resourceSendgridTemplateRead(_ context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if err = sendgridTemplateParse(template, d); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}
 
-	//nolint:errcheck
-	d.Set("name", template.Name)
-	//nolint:errcheck
-	d.Set("generation", template.Generation)
-	//nolint:errcheck
-	d.Set("updated_at", template.UpdatedAt)
-
+func sendgridTemplateParse(template *sendgrid.Template, d *schema.ResourceData) error {
+	if err := d.Set("name", template.Name); err != nil {
+		return err
+	}
+	if err := d.Set("generation", template.Generation); err != nil {
+		return err
+	}
+	if err := d.Set("updated_at", template.UpdatedAt); err != nil {
+		return err
+	}
 	return nil
 }
 

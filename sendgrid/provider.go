@@ -43,14 +43,22 @@ func Provider() *schema.Provider {
 			},
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"sendgrid_template":          dataSendgridTemplate(),
+			"sendgrid_template_version":  dataSendgridTemplateVersion(),
+			"sendgrid_unsubscribe_group": dataSendgridUnsubscribeGroup(),
+		},
+
 		ResourcesMap: map[string]*schema.Resource{
-			"sendgrid_api_key":           resourceSendgridAPIKey(),
-			"sendgrid_subuser":           resourceSendgridSubuser(),
-			"sendgrid_template":          resourceSendgridTemplate(),
-			"sendgrid_template_version":  resourceSendgridTemplateVersion(),
-			"sendgrid_unsubscribe_group": resourceSendgridUnsubscribeGroup(),
-			"sendgrid_parse_webhook":     resourceSendgridParseWebhook(),
-			"sendgrid_event_webhook":     resourceSendgridEventWebhook(),
+			"sendgrid_api_key":               resourceSendgridAPIKey(),
+			"sendgrid_subuser":               resourceSendgridSubuser(),
+			"sendgrid_template":              resourceSendgridTemplate(),
+			"sendgrid_template_version":      resourceSendgridTemplateVersion(),
+			"sendgrid_unsubscribe_group":     resourceSendgridUnsubscribeGroup(),
+			"sendgrid_parse_webhook":         resourceSendgridParseWebhook(),
+			"sendgrid_event_webhook":         resourceSendgridEventWebhook(),
+			"sendgrid_domain_authentication": resourceSendgridDomainAuthentication(),
+			"sendgrid_link_branding":         resourceSendgridLinkBranding(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

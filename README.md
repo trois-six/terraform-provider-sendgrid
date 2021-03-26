@@ -26,10 +26,15 @@ $ make testacc
 
 The documentation is created thank's to a fork of https://github.com/terraform-providers/terraform-provider-baiducloud/tree/master/gendocs.
 
-## [Terraform Registry](https://registry.terraform.io/providers/Trois-Six/sendgrid)
+## [Terraform Registry](https://registry.terraform.io/providers/CareCognitics/sendgrid)
 
 ## Known issues
 
 The API KEY API is not completely documented: when you don't set scopes, you get all scopes. This is managed by the provider.
 
 When you set one or multiple scopes, even if you don't set the scopes `sender_verification_eligible` and `2fa_required`, you will get them in the end. It's managed by the provider: if you don't add these scopes to the list of scopes, the provider does it for you.
+
+
+### Acknowledgments
+
+This is a derivative work based on https://github.com/Trois-Six/terraform-provider-sendgrid which was created by Pierre Erraud

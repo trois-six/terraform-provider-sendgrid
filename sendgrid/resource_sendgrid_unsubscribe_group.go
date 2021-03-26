@@ -90,15 +90,25 @@ func resourceSendgridUnsubscribeGroupRead(_ context.Context, d *schema.ResourceD
 		return diag.FromErr(err.Err)
 	}
 
-	//nolint:errcheck
-	d.Set("name", group.Name)
-	//nolint:errcheck
-	d.Set("description", group.Description)
-	//nolint:errcheck
-	d.Set("is_default", group.IsDefault)
-	//nolint:errcheck
-	d.Set("unsubscribes", group.Unsubscribes)
+	if err := sendgridUnsubscribeGroupParse(group, d); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}
 
+func sendgridUnsubscribeGroupParse(group *sendgrid.UnsubscribeGroup, d *schema.ResourceData) error {
+	if err := d.Set("name", group.Name); err != nil {
+		return err
+	}
+	if err := d.Set("description", group.Description); err != nil {
+		return err
+	}
+	if err := d.Set("is_default", group.IsDefault); err != nil {
+		return err
+	}
+	if err := d.Set("unsubscribes", group.Unsubscribes); err != nil {
+		return err
+	}
 	return nil
 }
 

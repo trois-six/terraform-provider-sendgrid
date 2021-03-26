@@ -26,6 +26,18 @@ func parseAPIKey(respBody string) (*APIKey, RequestError) {
 	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
+func parseAPIKeys(respBody string) ([]APIKey, RequestError) {
+	var body []APIKey
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing API key: %w", err),
+		}
+	}
+
+	return body, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
 // CreateAPIKey creates an APIKey and returns it.
 func (c *Client) CreateAPIKey(name string, scopes []string) (*APIKey, RequestError) {
 	if name == "" {
@@ -74,6 +86,18 @@ func (c *Client) ReadAPIKey(id string) (*APIKey, RequestError) {
 	}
 
 	return parseAPIKey(respBody)
+}
+
+func (c *Client) ReadAPIKeys() ([]APIKey, RequestError) {
+	respBody, _, err := c.Get("GET", "/api_keys")
+	if err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
+	}
+
+	return parseAPIKeys(respBody)
 }
 
 // UpdateAPIKey edits an APIKey and returns it.

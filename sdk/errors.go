@@ -75,6 +75,18 @@ var (
 	ErrUrlRequired = errors.New("a url is required")
 
 	ErrFailedPatchingEventWebhook = errors.New("failed to patch event webhook")
+
+	ErrFailedCreatingDomainAuthentication = errors.New("failed to create domain authentication")
+
+	ErrDomainAuthenticationIDRequired = errors.New("id for domain authentication is required")
+
+	ErrFailedDeletingDomainAuthentication = errors.New("failed deleting domain authentication")
+
+	ErrLinkBrandingIDRequired = errors.New("link branding id is required")
+
+	ErrFailedDeletingLinkBranding = errors.New("failed to delete link branding")
+
+	ErrFailedCreatingLinkBranding = errors.New("failed to create link branding")
 )
 
 // RequestError struct permits to embed to return the statucode and the error to the parent function.

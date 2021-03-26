@@ -145,8 +145,19 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 	c := m.(*sendgrid.Client)
 
 	if d.HasChange("disabled") {
-		_, requestErr := c.UpdateSubuser(d.Id(), d.Get("disabled").(bool))
-		if requestErr.Err != nil {
+		if _, requestErr := c.UpdateSubuser(d.Id(), d.Get("disabled").(bool)); requestErr.Err != nil {
+			return diag.FromErr(requestErr.Err)
+		}
+	}
+
+	if d.HasChange("ips") {
+		ipsSet := d.Get("ips").(*schema.Set).List()
+		ips := make([]string, 0)
+
+		for _, ip := range ipsSet {
+			ips = append(ips, ip.(string))
+		}
+		if requestErr := c.UpdateSubuserIPs(d.Id(), ips); requestErr.Err != nil {
 			return diag.FromErr(requestErr.Err)
 		}
 	}

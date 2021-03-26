@@ -54,56 +54,67 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Recipient resubscribes to specific group by updating preferences. You need to enable Subscription Tracking for getting this type of event.",
 				Optional:    true,
+				Default:     true,
 			},
 			"delivered": {
 				Type:        schema.TypeBool,
 				Description: "Message has been successfully delivered to the receiving server.",
 				Optional:    true,
+				Default:     true,
 			},
 			"group_unsubscribe": {
 				Type:        schema.TypeBool,
 				Description: "Recipient unsubscribe from specific group, by either direct link or updating preferences. You need to enable Subscription Tracking for getting this type of event.",
 				Optional:    true,
+				Default:     true,
 			},
 			"spam_report": {
 				Type:        schema.TypeBool,
 				Description: "Recipient marked a message as spam.",
 				Optional:    true,
+				Default:     true,
 			},
 			"bounce": {
 				Type:        schema.TypeBool,
 				Description: "Receiving server could not or would not accept message.",
 				Optional:    true,
+				Default:     true,
 			},
 			"deferred": {
 				Type:        schema.TypeBool,
 				Description: "Recipient's email server temporarily rejected message.",
 				Optional:    true,
+				Default:     true,
 			},
 			"unsubscribe": {
 				Type:        schema.TypeBool,
 				Description: "Recipient clicked on message's subscription management link. You need to enable Subscription Tracking for getting this type of event.",
 				Optional:    true,
+				Default:     true,
 			},
 			"processed": {
 				Type:        schema.TypeBool,
 				Description: "Message has been received and is ready to be delivered.",
 				Optional:    true,
+				Default:     true,
 			},
 			"open": {
 				Type:        schema.TypeBool,
 				Description: "Recipient has opened the HTML message. You need to enable Open Tracking for getting this type of event.",
 				Optional:    true,
+				Default:     true,
 			},
 			"click": {
 				Type:        schema.TypeBool,
 				Description: "Recipient clicked on a link within the message. You need to enable Click Tracking for getting this type of event.",
 				Optional:    true,
+				Default:     true,
 			},
 			"dropped": {
 				Type:        schema.TypeBool,
 				Description: "You may see the following drop reasons: Invalid SMTPAPI header, Spam Content (if spam checker app enabled), Unsubscribed Address, Bounced Address, Spam Reporting Address, Invalid, Recipient List over Package Quota.",
 				Optional:    true,
+				Default:     true,
 			},
 			"oauth_client_id": {
 				Type:        schema.TypeString,
@@ -153,6 +164,12 @@ func resourceSendgridEventWebhookPatch(ctx context.Context, d *schema.ResourceDa
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
 		return c.PatchEventWebhook(enabled, url, groupResubscribe, delivered, groupUnsubscribe, spamReport, bounce, deferred, unsubscribe, processed, open, click, dropped, oauthClientId, oauthClientSecret, oauthTokenUrl)
 	})
+
+	if c.OnBehalfOf != "" {
+		d.SetId(c.OnBehalfOf) // since there is only a global event webhook per subuser
+	} else {
+		d.SetId("default") // or at the parent account level
+	}
 
 	if err != nil {
 		return diag.FromErr(err)
