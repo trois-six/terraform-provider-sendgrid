@@ -132,6 +132,16 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Description: "The URL where Twilio SendGrid sends the Client ID and Client Secret to generate an access token. This should be your OAuth server or service provider. When passing data in this field, you must also include the oauth_client_id field.",
 				Optional:    true,
 			},
+			"signed": {
+				Type:        schema.TypeBool,
+				Description: "Should the event webhook use signing?",
+				Optional:    true,
+			},
+			"public_key": {
+				Type:        schema.TypeString,
+				Description: "The public key used to sign the event webhook. Only present if 'signed' is true",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -164,15 +174,20 @@ func resourceSendgridEventWebhookPatch(ctx context.Context, d *schema.ResourceDa
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
 		return c.PatchEventWebhook(enabled, url, groupResubscribe, delivered, groupUnsubscribe, spamReport, bounce, deferred, unsubscribe, processed, open, click, dropped, oauthClientId, oauthClientSecret, oauthTokenUrl)
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChange("signed") {
+		if _, err := c.ConfigureEventWebhookSigning(d.Get("signed").(bool)); err.Err != nil {
+			return diag.FromErr(err.Err)
+		}
+	}
 
 	if c.OnBehalfOf != "" {
 		d.SetId(c.OnBehalfOf) // since there is only a global event webhook per subuser
 	} else {
 		d.SetId("default") // or at the parent account level
-	}
-
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return resourceSendgridEventWebhookRead(ctx, d, m)
@@ -216,6 +231,15 @@ func resourceSendgridEventWebhookRead(_ context.Context, d *schema.ResourceData,
 	d.Set("oauth_client_id", webhook.OAuthClientId)
 	//nolint:errcheck
 	d.Set("oauth_token_url", webhook.OAuthTokenUrl)
+
+	webhookSigning, err := c.ReadEventWebhookSigning()
+	if err.Err != nil {
+		return diag.FromErr(err.Err)
+	}
+	//nolint:errcheck
+	d.Set("public_key", webhookSigning.PublicKey)
+	//nolint:errcheck
+	d.Set("signed", webhookSigning.PublicKey != "")
 
 	return nil
 }

@@ -40,11 +40,13 @@ func resourceSendgridParseWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "A specific and unique domain or subdomain that you have created to use exclusively to parse your incoming email. For example, parse.yourdomain.com.",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"url": {
 				Type:        schema.TypeString,
 				Description: "The public URL where you would like SendGrid to POST the data parsed from your email. Any emails sent with the given hostname provided (whose MX records have been updated to point to SendGrid) will be parsed and POSTed to this URL.",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"spam_check": {
 				Type:        schema.TypeBool,
@@ -106,12 +108,11 @@ func resourceSendgridParseWebhookRead(_ context.Context, d *schema.ResourceData,
 func resourceSendgridParseWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
-	url := d.Get("url").(string)
 	spamCheck := d.Get("spam_check").(bool)
 	sendRaw := d.Get("send_raw").(bool)
 
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
-		return c.UpdateParseWebhook(d.Id(), url, spamCheck, sendRaw)
+		return nil, c.UpdateParseWebhook(d.Id(), spamCheck, sendRaw)
 	})
 	if err != nil {
 		return diag.FromErr(err)

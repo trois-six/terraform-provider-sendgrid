@@ -26,8 +26,25 @@ type EventWebhook struct {
 	OAuthTokenUrl     string `json:"oauth_token_url,omitempty"`
 }
 
+type EventWebhookSigning struct {
+	Enabled   bool   `json:"enabled"`
+	PublicKey string `json:"public_key"`
+}
+
 func parseEventWebhook(respBody string) (*EventWebhook, RequestError) {
 	var body EventWebhook
+	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed parsing event webhook: %w", err),
+		}
+	}
+
+	return &body, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
+func parseEventWebhookSigning(respBody string) (*EventWebhookSigning, RequestError) {
+	var body EventWebhookSigning
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
@@ -82,7 +99,7 @@ func (c *Client) PatchEventWebhook(enabled bool, url string, groupResubscribe bo
 	return parseEventWebhook(respBody)
 }
 
-// ReadEventWebhook retreives an EventWebhook and returns it.
+// ReadEventWebhook retrieves an EventWebhook and returns it.
 func (c *Client) ReadEventWebhook() (*EventWebhook, RequestError) {
 	respBody, _, err := c.Get("GET", "/user/webhooks/event/settings")
 	if err != nil {
@@ -93,4 +110,39 @@ func (c *Client) ReadEventWebhook() (*EventWebhook, RequestError) {
 	}
 
 	return parseEventWebhook(respBody)
+}
+
+func (c *Client) ConfigureEventWebhookSigning(enabled bool) (*EventWebhookSigning, RequestError) {
+
+	respBody, statusCode, err := c.Post("PATCH", "/user/webhooks/event/settings/signed", EventWebhookSigning{
+		Enabled: enabled,
+	})
+	if err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed patching event webhook: %w", err),
+		}
+	}
+
+	if statusCode >= http.StatusMultipleChoices {
+		return nil, RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedPatchingEventWebhook, statusCode, respBody),
+		}
+	}
+
+	return parseEventWebhookSigning(respBody)
+}
+
+func (c *Client) ReadEventWebhookSigning() (*EventWebhookSigning, RequestError) {
+	respBody, _, err := c.Get("GET", "/user/webhooks/event/settings/signed")
+
+	if err != nil {
+		return nil, RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        err,
+		}
+	}
+
+	return parseEventWebhookSigning(respBody)
 }

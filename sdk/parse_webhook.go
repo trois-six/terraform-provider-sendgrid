@@ -85,30 +85,29 @@ func (c *Client) ReadParseWebhook(hostname string) (*ParseWebhook, RequestError)
 }
 
 // UpdateParseWebhook edits an ParseWebhook and returns it.
-func (c *Client) UpdateParseWebhook(hostname string, url string, spamCheck bool, sendRaw bool) (*ParseWebhook, RequestError) {
+func (c *Client) UpdateParseWebhook(hostname string, spamCheck bool, sendRaw bool) RequestError {
 	if hostname == "" {
-		return nil, RequestError{
+		return RequestError{
 			StatusCode: http.StatusInternalServerError,
 			Err:        ErrHostnameRequired,
 		}
 	}
 
 	t := ParseWebhook{}
-	if url != "" {
-		t.Url = url
-	}
 	t.SpamCheck = spamCheck
 	t.SendRaw = sendRaw
 
-	respBody, _, err := c.Post("PUT", "/user/webhooks/parse/settings/"+hostname, t)
+	_, _, err := c.Post("PUT", "/user/webhooks/parse/settings/"+hostname, t)
 	if err != nil {
-		return nil, RequestError{
+		return RequestError{
 			StatusCode: http.StatusInternalServerError,
 			Err:        err,
 		}
 	}
 
-	return parseParseWebhook(respBody)
+	return RequestError{
+		StatusCode: http.StatusOK,
+	}
 }
 
 // DeleteParseWebhook deletes an ParseWebhook.
