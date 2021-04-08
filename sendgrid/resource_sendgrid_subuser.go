@@ -162,6 +162,15 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if d.HasChange("password") {
+		oldPassword, newPassword := d.GetChange("password")
+		username := d.Get("username").(string)
+
+		if requestErr := c.UpdateSubuserPassword(username, oldPassword.(string), newPassword.(string)); requestErr.Err != nil {
+			return diag.FromErr(requestErr.Err)
+		}
+	}
+
 	return resourceSendgridSubuserRead(ctx, d, m)
 }
 

@@ -19,6 +19,7 @@ package sendgrid
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,14 +38,16 @@ func resourceSendgridUnsubscribeGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The name you will use to describe this API Key.",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The name you will use to describe this unsubscribe group.",
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 30),
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Description: "The description of the unsubscribe group",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "The description of the unsubscribe group",
+				Optional:     true,
+				ValidateFunc: validation.StringLenBetween(0, 100),
 			},
 			"is_default": {
 				Type:        schema.TypeBool,

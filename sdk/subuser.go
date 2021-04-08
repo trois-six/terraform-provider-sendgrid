@@ -2,6 +2,7 @@ package sendgrid
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,6 +26,11 @@ type SubUser struct {
 	SignupSessionToken string           `json:"signup_session_token,omitempty"`
 	AuthorizationToken string           `json:"authorization_token,omitempty"`
 	CreditAllocation   creditAllocation `json:"credit_allocation,omitempty"`
+}
+
+type UpdateSubUserPassword struct {
+	NewPassword string `json:"new_password"`
+	OldPassword string `json:"old_password"`
 }
 
 func parseSubUser(respBody string) (*SubUser, RequestError) {
@@ -180,4 +186,34 @@ func (c *Client) DeleteSubuser(username string) (bool, RequestError) {
 	}
 
 	return true, RequestError{StatusCode: http.StatusOK, Err: nil}
+}
+
+func (c *Client) UpdateSubuserPassword(username string, oldPassword string, newPassword string) RequestError {
+	if newPassword == "" {
+		return RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("new password must be non empty")}
+	}
+
+	origOnBehalfOf := c.OnBehalfOf
+	c.OnBehalfOf = username
+	_, statusCode, err := c.Post("PUT", "/user/password", UpdateSubUserPassword{
+		NewPassword: newPassword,
+		OldPassword: oldPassword,
+	})
+	c.OnBehalfOf = origOnBehalfOf
+
+	if err != nil {
+		return RequestError{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("failed updating subUser password: %w", err),
+		}
+	}
+
+	if statusCode >= http.StatusMultipleChoices {
+		return RequestError{
+			StatusCode: statusCode,
+			Err:        fmt.Errorf("%w: statusCode: %d", err, statusCode),
+		}
+	}
+
+	return RequestError{StatusCode: http.StatusOK, Err: nil}
 }

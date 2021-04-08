@@ -17,6 +17,7 @@ package sendgrid
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -35,9 +36,10 @@ func resourceSendgridTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the template, max length: 100.",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The name of the template, max length: 100.",
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"generation": {
 				Type:        schema.TypeString,
