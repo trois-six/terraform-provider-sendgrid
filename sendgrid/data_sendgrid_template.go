@@ -2,6 +2,7 @@ package sendgrid
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
@@ -18,6 +19,7 @@ func dataSendgridTemplate() *schema.Resource {
 		val.ValidateFunc = nil
 		val.ForceNew = true
 	}
+
 	s["template_id"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -34,6 +36,7 @@ func dataSendgridTemplate() *schema.Resource {
 		Optional: true,
 		Computed: true,
 	}
+
 	return &schema.Resource{
 		ReadContext: dataSendgridTemplateRead,
 		Schema:      s,
@@ -41,37 +44,46 @@ func dataSendgridTemplate() *schema.Resource {
 }
 
 func dataSendgridTemplateRead(context context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	templateId := d.Get("template_id").(string)
+	templateID := d.Get("template_id").(string)
 	name := d.Get("name").(string)
 	c := m.(*sendgrid.Client)
 
-	if templateId != "" {
-		d.SetId(templateId)
+	switch {
+	case templateID != "":
+		d.SetId(templateID)
+
 		return resourceSendgridTemplateRead(context, d, m)
-	} else if name != "" {
+	case name != "":
 		generation := d.Get("generation").(string)
 		if generation == "" {
 			generation = "dynamic"
 		}
+
 		templates, err := c.ReadTemplates(generation)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		names := make([]string, 0)
-		for _, template := range templates {
+
+		for i := range templates {
+			template := templates[i]
+
 			if template.Name == name {
 				d.SetId(template.ID)
+
 				if err = sendgridTemplateParse(&template, d); err != nil {
 					return diag.FromErr(err)
 				}
+
 				return nil
-			} else {
-				names = append(names, template.Name)
 			}
+
+			names = append(names, template.Name)
 		}
+
 		return diag.Errorf("unable to find a template with name '%s', valid names are %v", name, names)
-	} else {
+	default:
 		return diag.Errorf("either 'template_id' or 'name' must be specified for data.sendgrid_template")
 	}
-
 }

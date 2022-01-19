@@ -19,10 +19,12 @@ import (
 )
 
 const (
-	providerName = "sendgrid"
-	indexFile    = "index.md.tpl"
-	docFile      = "doc.md.tpl"
-	docRoot      = "../docs"
+	providerName   = "sendgrid"
+	indexFile      = "index.md.tpl"
+	docFile        = "doc.md.tpl"
+	docRoot        = "../docs"
+	dataSourcesStr = "Data Sources"
+	forceNewStr    = ", ForceNew"
 )
 
 func main() {
@@ -48,7 +50,7 @@ func main() {
 }
 
 // genIdx generating index for resource.
-func genIdx(fpath string) {
+func genIdx(fpath string) { //nolint:cyclop,funlen
 	type Index struct {
 		Name          string
 		NameShort     string
@@ -57,9 +59,11 @@ func genIdx(fpath string) {
 		Resources     [][]string
 	}
 
-	resources := ""
-	dataSources := []Index{}
-	sources := []Index{}
+	var resources string
+
+	var dataSources []Index
+
+	var sources []Index
 
 	fname := "provider.go"
 	log.Printf("[START]get description from file: %s\n", fname)
@@ -95,7 +99,7 @@ func genIdx(fpath string) {
 			continue
 		}
 
-		if strings.HasPrefix(v, "  ") {
+		if strings.HasPrefix(v, "  ") { //nolint:nestif
 			if index.Name == "" {
 				log.Printf("[FAIL!]no resource name found: %s", v)
 
@@ -105,7 +109,7 @@ func genIdx(fpath string) {
 			index.Resources = append(index.Resources, []string{vv, vv[len(providerName)+1:]})
 		} else {
 			if index.Name != "" {
-				if index.Name == "Data Sources" {
+				if index.Name == dataSourcesStr {
 					dataSources = append(dataSources, index)
 				} else {
 					sources = append(sources, index)
@@ -114,7 +118,7 @@ func genIdx(fpath string) {
 			vvv := ""
 			resType := "datasource"
 			resTypeFolder := "data-sources"
-			if vv != "Data Sources" {
+			if vv != dataSourcesStr {
 				resType = "resource"
 				resTypeFolder = "resources"
 				vs := strings.Split(vv, " ")
@@ -131,7 +135,7 @@ func genIdx(fpath string) {
 	}
 
 	if index.Name != "" {
-		if index.Name == "Data Sources" {
+		if index.Name == dataSourcesStr {
 			dataSources = append(dataSources, index)
 		} else {
 			sources = append(sources, index)
@@ -145,7 +149,7 @@ func genIdx(fpath string) {
 
 	fname = fmt.Sprintf("%s/index.md", docRoot)
 
-	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644) //nolint:gomnd
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", fname, err)
 
@@ -178,7 +182,7 @@ func genIdx(fpath string) {
 }
 
 // genDoc generating doc for resource.
-func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
+func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) { //nolint:cyclop,funlen
 	data := map[string]string{
 		"name":              name,
 		"dtype":             strings.ReplaceAll(dtype, "_", ""),
@@ -237,7 +241,7 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	attributes := []string{}
 	subStruct := []string{}
 
-	var keys []string
+	keys := make([]string, 0)
 
 	for k := range resource.Schema {
 		keys = append(keys, k)
@@ -251,10 +255,11 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 			continue
 		}
 
-		if v.Required {
+		switch {
+		case v.Required:
 			opt := "Required"
 			if v.ForceNew {
-				opt += ", ForceNew"
+				opt += forceNewStr
 			}
 
 			requiredArgs = append(
@@ -263,14 +268,16 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 			)
 
 			subStruct = append(subStruct, getSubStruct(0, k, v)...)
-		} else if v.Optional {
+		case v.Optional:
 			opt := "Optional"
 			if v.ForceNew {
-				opt += ", ForceNew"
+				opt += forceNewStr
 			}
+
 			optionalArgs = append(optionalArgs, fmt.Sprintf("* `%s` - (%s) %s", k, opt, v.Description))
+
 			subStruct = append(subStruct, getSubStruct(0, k, v)...)
-		} else {
+		default:
 			attrs := getAttributes(0, k, v)
 			if len(attrs) > 0 {
 				attributes = append(attributes, attrs...)
@@ -292,8 +299,8 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 	data["attributes"] = strings.Join(attributes, "\n")
 
 	fname = fmt.Sprintf("%s/%s/%s.md", docRoot, dtypeFolder, data["resource"])
-	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 
+	fd, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644) //nolint:gomnd
 	if err != nil {
 		log.Printf("[FAIL!]open file %s failed: %s", fname, err)
 
@@ -327,16 +334,17 @@ func genDoc(dtype, dtypeFolder, fpath, name string, resource *schema.Resource) {
 
 // getAttributes get attributes from schema.
 func getAttributes(step int, k string, v *schema.Schema) []string {
-	attributes := []string{}
-	ident := strings.Repeat(" ", step*2)
+	var attributes []string
+
+	ident := strings.Repeat(" ", step+step)
 
 	if v.Description == "" {
 		return attributes
 	}
 
-	if v.Computed {
+	if v.Computed { //nolint:nestif
 		if _, ok := v.Elem.(*schema.Resource); ok {
-			listAttributes := []string{}
+			var listAttributes []string
 
 			for kk, vv := range v.Elem.(*schema.Resource).Schema {
 				attrs := getAttributes(step+1, kk, vv)
@@ -371,21 +379,22 @@ func getFileDescription(fname string) (string, error) {
 
 	parsedAst, err := parser.ParseFile(fset, fname, nil, parser.ParseComments)
 	if err != nil {
-		return "", err
+		return "", err //nolint:wrapcheck
 	}
 
 	return parsedAst.Doc.Text(), nil
 }
 
 // getSubStruct get sub structure from go file.
-func getSubStruct(step int, k string, v *schema.Schema) []string {
-	subStructs := []string{}
+//nolint:gocognit
+func getSubStruct(step int, k string, v *schema.Schema) []string { //nolint:cyclop,funlen
+	var subStructs []string
 
 	if v.Description == "" {
 		return subStructs
 	}
 
-	if v.Type == schema.TypeMap || v.Type == schema.TypeList || v.Type == schema.TypeSet {
+	if v.Type == schema.TypeMap || v.Type == schema.TypeList || v.Type == schema.TypeSet { //nolint:nestif
 		if _, ok := v.Elem.(*schema.Resource); ok {
 			subStructs = append(
 				subStructs,
@@ -408,23 +417,25 @@ func getSubStruct(step int, k string, v *schema.Schema) []string {
 					vv.Description = "************************* Please input Description for Schema ************************* "
 				}
 
-				if vv.Required {
+				switch {
+				case vv.Required:
 					opt := "Required"
 					if vv.ForceNew {
-						opt += ", ForceNew"
+						opt += forceNewStr
 					}
 
 					requiredArgs = append(
 						requiredArgs,
 						fmt.Sprintf("* `%s` - (%s) %s", kk, opt, vv.Description),
 					)
-				} else if vv.Optional {
+				case vv.Optional:
 					opt := "Optional"
 					if vv.ForceNew {
-						opt += ", ForceNew"
+						opt += forceNewStr
 					}
+
 					optionalArgs = append(optionalArgs, fmt.Sprintf("* `%s` - (%s) %s", kk, opt, vv.Description))
-				} else {
+				default:
 					attrs := getAttributes(0, kk, vv)
 					if len(attrs) > 0 {
 						attributes = append(attributes, attrs...)

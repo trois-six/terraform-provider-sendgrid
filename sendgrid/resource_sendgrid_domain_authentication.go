@@ -26,7 +26,7 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
-func resourceSendgridDomainAuthentication() *schema.Resource {
+func resourceSendgridDomainAuthentication() *schema.Resource { //nolint:funlen
 	return &schema.Resource{
 		CreateContext: resourceSendgridDomainAuthenticationCreate,
 		ReadContext:   resourceSendgridDomainAuthenticationRead,
@@ -64,14 +64,16 @@ func resourceSendgridDomainAuthentication() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"custom_spf": {
-				Type:        schema.TypeBool,
-				Description: "Specify whether to use a custom SPF or allow SendGrid to manage your SPF. This option is only available to authenticated domains set up for manual security.",
-				Optional:    true,
+				Type: schema.TypeBool,
+				Description: "Specify whether to use a custom SPF or allow SendGrid to manage your SPF. " +
+					"This option is only available to authenticated domains set up for manual security.",
+				Optional: true,
 			},
 			"is_default": {
-				Type:        schema.TypeBool,
-				Description: "Whether to use this authenticated domain as the fallback if no authenticated domains match the sender's domain.",
-				Optional:    true,
+				Type: schema.TypeBool,
+				Description: "Whether to use this authenticated domain as the fallback " +
+					"if no authenticated domains match the sender's domain.",
+				Optional: true,
 			},
 			"automatic_security": {
 				Type:        schema.TypeBool,
@@ -124,7 +126,10 @@ func resourceSendgridDomainAuthentication() *schema.Resource {
 	}
 }
 
-func resourceSendgridDomainAuthenticationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridDomainAuthenticationCreate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	domain := d.Get("domain").(string)
@@ -141,7 +146,15 @@ func resourceSendgridDomainAuthenticationCreate(ctx context.Context, d *schema.R
 	}
 
 	apiKeyStruct, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
-		return c.CreateDomainAuthentication(domain, subdomain, ips, customSPF, isDefault, automaticSecurity, customDKIMSelector)
+		return c.CreateDomainAuthentication(
+			domain,
+			subdomain,
+			ips,
+			customSPF,
+			isDefault,
+			automaticSecurity,
+			customDKIMSelector,
+		)
 	})
 
 	auth := apiKeyStruct.(*sendgrid.DomainAuthentication)
@@ -155,7 +168,10 @@ func resourceSendgridDomainAuthenticationCreate(ctx context.Context, d *schema.R
 	return resourceSendgridDomainAuthenticationRead(ctx, d, m)
 }
 
-func resourceSendgridDomainAuthenticationRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridDomainAuthenticationRead( //nolint:funlen
+	_ context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	auth, err := c.ReadDomainAuthentication(d.Id())
@@ -182,42 +198,50 @@ func resourceSendgridDomainAuthenticationRead(_ context.Context, d *schema.Resou
 	for idx, ip := range auth.IPs {
 		ips[idx] = ip
 	}
+
 	if er := d.Set("ips", schema.NewSet(d.Get("ips").(*schema.Set).F, ips)); er != nil {
 		return diag.FromErr(er)
 	}
 
 	dns := make([]interface{}, 0)
-	if auth.Dns.DKIM1.Type != "" {
+	if auth.DNS.DKIM1.Type != "" {
 		dns = append(dns, map[string]interface{}{
-			"type":  auth.Dns.DKIM1.Type,
-			"valid": auth.Dns.DKIM1.Valid,
-			"host":  auth.Dns.DKIM1.Host,
-			"data":  auth.Dns.DKIM1.Data,
+			"type":  auth.DNS.DKIM1.Type,
+			"valid": auth.DNS.DKIM1.Valid,
+			"host":  auth.DNS.DKIM1.Host,
+			"data":  auth.DNS.DKIM1.Data,
 		})
 	}
-	if auth.Dns.DKIM2.Type != "" {
+
+	if auth.DNS.DKIM2.Type != "" {
 		dns = append(dns, map[string]interface{}{
-			"type":  auth.Dns.DKIM2.Type,
-			"valid": auth.Dns.DKIM2.Valid,
-			"host":  auth.Dns.DKIM2.Host,
-			"data":  auth.Dns.DKIM2.Data,
+			"type":  auth.DNS.DKIM2.Type,
+			"valid": auth.DNS.DKIM2.Valid,
+			"host":  auth.DNS.DKIM2.Host,
+			"data":  auth.DNS.DKIM2.Data,
 		})
 	}
-	if auth.Dns.MailCNAME.Type != "" {
+
+	if auth.DNS.MailCNAME.Type != "" {
 		dns = append(dns, map[string]interface{}{
-			"type":  auth.Dns.MailCNAME.Type,
-			"valid": auth.Dns.MailCNAME.Valid,
-			"host":  auth.Dns.MailCNAME.Host,
-			"data":  auth.Dns.MailCNAME.Data,
+			"type":  auth.DNS.MailCNAME.Type,
+			"valid": auth.DNS.MailCNAME.Valid,
+			"host":  auth.DNS.MailCNAME.Host,
+			"data":  auth.DNS.MailCNAME.Data,
 		})
 	}
+
 	if er := d.Set("dns", dns); er != nil {
 		return diag.FromErr(er)
 	}
+
 	return nil
 }
 
-func resourceSendgridDomainAuthenticationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridDomainAuthenticationUpdate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	isDefault := d.Get("is_default").(bool)
@@ -234,16 +258,19 @@ func resourceSendgridDomainAuthenticationUpdate(ctx context.Context, d *schema.R
 		if err := c.ValidateDomainAuthentication(d.Id()); err.Err != nil || err.StatusCode != 200 {
 			if err.Err != nil {
 				return diag.FromErr(err.Err)
-			} else {
-				return diag.Errorf("unable to validate domain DNS configuration")
 			}
+
+			return diag.Errorf("unable to validate domain DNS configuration")
 		}
 	}
 
 	return resourceSendgridDomainAuthenticationRead(ctx, d, m)
 }
 
-func resourceSendgridDomainAuthenticationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridDomainAuthenticationDelete(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {

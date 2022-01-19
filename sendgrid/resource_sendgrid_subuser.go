@@ -157,6 +157,7 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 		for _, ip := range ipsSet {
 			ips = append(ips, ip.(string))
 		}
+
 		if requestErr := c.UpdateSubuserIPs(d.Id(), ips); requestErr.Err != nil {
 			return diag.FromErr(requestErr.Err)
 		}
@@ -166,7 +167,10 @@ func resourceSendgridSubuserUpdate(ctx context.Context, d *schema.ResourceData, 
 		oldPassword, newPassword := d.GetChange("password")
 		username := d.Get("username").(string)
 
-		if requestErr := c.UpdateSubuserPassword(username, oldPassword.(string), newPassword.(string)); requestErr.Err != nil {
+		if requestErr := c.UpdateSubuserPassword(
+			username,
+			oldPassword.(string),
+			newPassword.(string)); requestErr.Err != nil {
 			return diag.FromErr(requestErr.Err)
 		}
 	}

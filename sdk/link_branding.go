@@ -6,29 +6,29 @@ import (
 	"net/http"
 )
 
-type LinkBrandingDns struct {
-	DomainCNAME LinkBrandingDnsValue `json:"domain_cname,omitempty"`
-	OwnerCNAME  LinkBrandingDnsValue `json:"owner_cname,omitempty"`
+type LinkBrandingDNS struct {
+	DomainCNAME LinkBrandingDNSValue `json:"domain_cname,omitempty"` //nolint:tagliatelle
+	OwnerCNAME  LinkBrandingDNSValue `json:"owner_cname,omitempty"`  //nolint:tagliatelle
 }
 
-type LinkBrandingDnsValue struct {
+type LinkBrandingDNSValue struct {
 	Valid bool   `json:"valid,omitempty"`
 	Type  string `json:"type,omitempty"`
 	Host  string `json:"host,omitempty"`
 	Data  string `json:"data,omitempty"`
 }
 
-// LinkBranding is a Sendgrid domain authentication
+// LinkBranding is a Sendgrid domain authentication.
 type LinkBranding struct {
 	ID        int32           `json:"id,omitempty"`
-	UserID    int32           `json:"user_id,omitempty"`
+	UserID    int32           `json:"user_id,omitempty"` //nolint:tagliatelle
 	Domain    string          `json:"domain,omitempty"`
 	Subdomain string          `json:"subdomain,omitempty"`
 	Username  string          `json:"username,omitempty"`
 	IsDefault bool            `json:"default"`
 	Legacy    bool            `json:"legacy,omitempty"`
 	Valid     bool            `json:"valid,omitempty"`
-	Dns       LinkBrandingDns `json:"dns,omitempty"`
+	DNS       LinkBrandingDNS `json:"dns,omitempty"`
 }
 
 func parseLinkBranding(respBody string) (*LinkBranding, RequestError) {

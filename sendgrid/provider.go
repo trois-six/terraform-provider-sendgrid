@@ -21,6 +21,11 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
+const (
+	maxStringLength        = 100
+	unsubscribeGroupLength = 30
+)
+
 // Provider terraform.ResourceProvider.
 func Provider() *schema.Provider {
 	return &schema.Provider{

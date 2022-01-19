@@ -17,10 +17,10 @@ package sendgrid
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
@@ -39,7 +39,7 @@ func resourceSendgridTemplate() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The name of the template, max length: 100.",
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 100),
+				ValidateFunc: validation.StringLenBetween(1, maxStringLength),
 			},
 			"generation": {
 				Type:        schema.TypeString,
@@ -82,22 +82,27 @@ func resourceSendgridTemplateRead(_ context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = sendgridTemplateParse(template, d); err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
 func sendgridTemplateParse(template *sendgrid.Template, d *schema.ResourceData) error {
 	if err := d.Set("name", template.Name); err != nil {
-		return err
+		return ErrSetTemplateName
 	}
+
 	if err := d.Set("generation", template.Generation); err != nil {
-		return err
+		return ErrSetTemplateGeneration
 	}
+
 	if err := d.Set("updated_at", template.UpdatedAt); err != nil {
-		return err
+		return ErrSetTemplateUpdatedAt
 	}
+
 	return nil
 }
 

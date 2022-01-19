@@ -10,7 +10,7 @@ type Template struct {
 	ID         string            `json:"id,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Generation string            `json:"generation,omitempty"`
-	UpdatedAt  string            `json:"updated_at,omitempty"`
+	UpdatedAt  string            `json:"updated_at,omitempty"` //nolint:tagliatelle
 	Versions   []TemplateVersion `json:"versions,omitempty"`
 	Warnings   []string          `json:"warnings,omitempty"`
 }
@@ -81,6 +81,7 @@ func (c *Client) ReadTemplates(generation string) ([]Template, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed reading template: %w", err)
 	}
+
 	return parseTemplates(respBody)
 }
 

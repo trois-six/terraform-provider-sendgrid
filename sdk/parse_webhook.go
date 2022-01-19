@@ -9,9 +9,9 @@ import (
 // ParseWebhook is a Sendgrid inbound parse settings.
 type ParseWebhook struct {
 	Hostname  string `json:"hostname,omitempty"`
-	Url       string `json:"url,omitempty"`
-	SpamCheck bool   `json:"spam_check"`
-	SendRaw   bool   `json:"send_raw"`
+	URL       string `json:"url,omitempty"`
+	SpamCheck bool   `json:"spam_check"` //nolint:tagliatelle
+	SendRaw   bool   `json:"send_raw"`   //nolint:tagliatelle
 }
 
 func parseParseWebhook(respBody string) (*ParseWebhook, RequestError) {
@@ -27,23 +27,28 @@ func parseParseWebhook(respBody string) (*ParseWebhook, RequestError) {
 }
 
 // CreateParseWebhook creates an ParseWebhook and returns it.
-func (c *Client) CreateParseWebhook(hostname string, url string, spamCheck bool, sendRaw bool) (*ParseWebhook, RequestError) {
+func (c *Client) CreateParseWebhook(
+	hostname string,
+	url string,
+	spamCheck bool,
+	sendRaw bool) (*ParseWebhook, RequestError) {
 	if hostname == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
 			Err:        ErrHostnameRequired,
 		}
 	}
+
 	if url == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        ErrUrlRequired,
+			Err:        ErrURLRequired,
 		}
 	}
 
 	respBody, statusCode, err := c.Post("POST", "/user/webhooks/parse/settings", ParseWebhook{
 		Hostname:  hostname,
-		Url:       url,
+		URL:       url,
 		SpamCheck: spamCheck,
 		SendRaw:   sendRaw,
 	})

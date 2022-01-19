@@ -6,12 +6,12 @@ import (
 	"net/http"
 )
 
-// UnsubscribeGroup is a Sendgrid - Suppressions - Unsubscribe Group
+// UnsubscribeGroup is a Sendgrid - Suppressions - Unsubscribe Group.
 type UnsubscribeGroup struct {
 	ID           int32  `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	Description  string `json:"description,omitempty"`
-	IsDefault    bool   `json:"is_default"`
+	IsDefault    bool   `json:"is_default"` //nolint:tagliatelle
 	Unsubscribes int32  `json:"unsubscribes,omitempty"`
 }
 
@@ -40,7 +40,10 @@ func parseUnsubscribeGroups(respBody string) ([]UnsubscribeGroup, RequestError) 
 }
 
 // CreateUnsubscribeGroup creates an UnsubscribeGroup and returns it.
-func (c *Client) CreateUnsubscribeGroup(name string, description string, isDefault bool) (*UnsubscribeGroup, RequestError) {
+func (c *Client) CreateUnsubscribeGroup(
+	name string,
+	description string,
+	isDefault bool) (*UnsubscribeGroup, RequestError) {
 	if name == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
@@ -92,7 +95,6 @@ func (c *Client) ReadUnsubscribeGroup(id string) (*UnsubscribeGroup, RequestErro
 
 // ReadUnsubscribeGroups retrieves all UnsubscribeGroup and returns them.
 func (c *Client) ReadUnsubscribeGroups() ([]UnsubscribeGroup, RequestError) {
-
 	respBody, _, err := c.Get("GET", "/asm/groups")
 	if err != nil {
 		return nil, RequestError{
@@ -105,7 +107,11 @@ func (c *Client) ReadUnsubscribeGroups() ([]UnsubscribeGroup, RequestError) {
 }
 
 // UpdateUnsubscribeGroup edits an UnsubscribeGroup and returns it.
-func (c *Client) UpdateUnsubscribeGroup(id string, name string, description string, isDefault bool) (*UnsubscribeGroup, RequestError) {
+func (c *Client) UpdateUnsubscribeGroup(
+	id string,
+	name string,
+	description string,
+	isDefault bool) (*UnsubscribeGroup, RequestError) {
 	if id == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
@@ -116,9 +122,11 @@ func (c *Client) UpdateUnsubscribeGroup(id string, name string, description stri
 	t := UnsubscribeGroup{}
 	t.Name = name
 	t.IsDefault = isDefault
+
 	if len(description) > 0 {
 		t.Description = description
 	}
+
 	respBody, _, err := c.Post("PATCH", "/asm/groups/"+id, t)
 	if err != nil {
 		return nil, RequestError{

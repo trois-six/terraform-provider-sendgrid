@@ -77,6 +77,7 @@ func (c *Client) Post(method rest.Method, endpoint string, body interface{}) (st
 	if body != nil {
 		req.Body, err = bodyToJSON(body)
 	}
+
 	if err != nil {
 		return "", 0, fmt.Errorf("failed preparing request body: %w", err)
 	}

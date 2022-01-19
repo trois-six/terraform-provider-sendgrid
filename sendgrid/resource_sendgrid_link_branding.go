@@ -24,7 +24,7 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
-func resourceSendgridLinkBranding() *schema.Resource {
+func resourceSendgridLinkBranding() *schema.Resource { //nolint:funlen
 	return &schema.Resource{
 		CreateContext: resourceSendgridLinkBrandingCreate,
 		ReadContext:   resourceSendgridLinkBrandingRead,
@@ -59,10 +59,11 @@ func resourceSendgridLinkBranding() *schema.Resource {
 				Optional:    true,
 			},
 			"valid": {
-				Type:        schema.TypeBool,
-				Description: "Indicates if this is a valid link branding or not.  Set to `true` to attempt validation on first update.",
-				Optional:    true,
-				Computed:    true,
+				Type: schema.TypeBool,
+				Description: "Indicates if this is a valid link branding or not. " +
+					"Set to `true` to attempt validation on first update.",
+				Optional: true,
+				Computed: true,
 			},
 			"dns": {
 				Type:        schema.TypeList,
@@ -139,25 +140,28 @@ func resourceSendgridLinkBrandingRead(_ context.Context, d *schema.ResourceData,
 	d.Set("valid", link.Valid)
 
 	dns := make([]interface{}, 0)
-	if link.Dns.DomainCNAME.Type != "" {
+	if link.DNS.DomainCNAME.Type != "" {
 		dns = append(dns, map[string]interface{}{
-			"type":  link.Dns.DomainCNAME.Type,
-			"valid": link.Dns.DomainCNAME.Valid,
-			"host":  link.Dns.DomainCNAME.Host,
-			"data":  link.Dns.DomainCNAME.Data,
+			"type":  link.DNS.DomainCNAME.Type,
+			"valid": link.DNS.DomainCNAME.Valid,
+			"host":  link.DNS.DomainCNAME.Host,
+			"data":  link.DNS.DomainCNAME.Data,
 		})
 	}
-	if link.Dns.OwnerCNAME.Type != "" {
+
+	if link.DNS.OwnerCNAME.Type != "" {
 		dns = append(dns, map[string]interface{}{
-			"type":  link.Dns.OwnerCNAME.Type,
-			"valid": link.Dns.OwnerCNAME.Valid,
-			"host":  link.Dns.OwnerCNAME.Host,
-			"data":  link.Dns.OwnerCNAME.Data,
+			"type":  link.DNS.OwnerCNAME.Type,
+			"valid": link.DNS.OwnerCNAME.Valid,
+			"host":  link.DNS.OwnerCNAME.Host,
+			"data":  link.DNS.OwnerCNAME.Data,
 		})
 	}
+
 	if er := d.Set("dns", dns); er != nil {
 		return diag.FromErr(er)
 	}
+
 	return nil
 }
 
@@ -177,9 +181,9 @@ func resourceSendgridLinkBrandingUpdate(ctx context.Context, d *schema.ResourceD
 		if err := c.ValidateLinkBranding(d.Id()); err.Err != nil || err.StatusCode != 200 {
 			if err.Err != nil {
 				return diag.FromErr(err.Err)
-			} else {
-				return diag.Errorf("unable to validate link branding DNS configuration")
 			}
+
+			return diag.Errorf("unable to validate link branding DNS configuration")
 		}
 	}
 

@@ -19,10 +19,10 @@ package sendgrid
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
@@ -41,13 +41,13 @@ func resourceSendgridUnsubscribeGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The name you will use to describe this unsubscribe group.",
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 30),
+				ValidateFunc: validation.StringLenBetween(1, unsubscribeGroupLength),
 			},
 			"description": {
 				Type:         schema.TypeString,
 				Description:  "The description of the unsubscribe group",
 				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(0, 100),
+				ValidateFunc: validation.StringLenBetween(0, maxStringLength),
 			},
 			"is_default": {
 				Type:        schema.TypeBool,
@@ -63,7 +63,10 @@ func resourceSendgridUnsubscribeGroup() *schema.Resource {
 	}
 }
 
-func resourceSendgridUnsubscribeGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridUnsubscribeGroupCreate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	name := d.Get("name").(string)
@@ -96,26 +99,34 @@ func resourceSendgridUnsubscribeGroupRead(_ context.Context, d *schema.ResourceD
 	if err := sendgridUnsubscribeGroupParse(group, d); err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
 func sendgridUnsubscribeGroupParse(group *sendgrid.UnsubscribeGroup, d *schema.ResourceData) error {
 	if err := d.Set("name", group.Name); err != nil {
-		return err
+		return ErrSetUnsubscribeGroupName
 	}
+
 	if err := d.Set("description", group.Description); err != nil {
-		return err
+		return ErrSetUnsubscribeGroupDesc
 	}
+
 	if err := d.Set("is_default", group.IsDefault); err != nil {
-		return err
+		return ErrSetUnsubscribeGroupIsDefault
 	}
+
 	if err := d.Set("unsubscribes", group.Unsubscribes); err != nil {
-		return err
+		return ErrSetUnsubscribeGroupUnsuscribes
 	}
+
 	return nil
 }
 
-func resourceSendgridUnsubscribeGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridUnsubscribeGroupUpdate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	name := d.Get("name").(string)
@@ -132,7 +143,10 @@ func resourceSendgridUnsubscribeGroupUpdate(ctx context.Context, d *schema.Resou
 	return resourceSendgridUnsubscribeGroupRead(ctx, d, m)
 }
 
-func resourceSendgridUnsubscribeGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSendgridUnsubscribeGroupDelete(
+	ctx context.Context,
+	d *schema.ResourceData,
+	m interface{}) diag.Diagnostics {
 	c := m.(*sendgrid.Client)
 
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {

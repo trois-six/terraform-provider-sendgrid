@@ -8,18 +8,18 @@ import (
 // TemplateVersion is a Sendgrid transactional template version.
 type TemplateVersion struct {
 	ID                   string   `json:"id,omitempty"`
-	TemplateID           string   `json:"template_id,omitempty"`
-	UpdatedAt            string   `json:"updated_at,omitempty"`
-	ThumbnailURL         string   `json:"thumbnail_url,omitempty"`
+	TemplateID           string   `json:"template_id,omitempty"`   //nolint:tagliatelle
+	UpdatedAt            string   `json:"updated_at,omitempty"`    //nolint:tagliatelle
+	ThumbnailURL         string   `json:"thumbnail_url,omitempty"` //nolint:tagliatelle
 	Warnings             []string `json:"warnings,omitempty"`
 	Active               int      `json:"active,omitempty"`
 	Name                 string   `json:"name,omitempty"`
-	HTMLContent          string   `json:"html_content,omitempty"`
-	PlainContent         string   `json:"plain_content,omitempty"`
-	GeneratePlainContent bool     `json:"generate_plain_content,omitempty"`
+	HTMLContent          string   `json:"html_content,omitempty"`           //nolint:tagliatelle
+	PlainContent         string   `json:"plain_content,omitempty"`          //nolint:tagliatelle
+	GeneratePlainContent bool     `json:"generate_plain_content,omitempty"` //nolint:tagliatelle
 	Subject              string   `json:"subject,omitempty"`
 	Editor               string   `json:"editor,omitempty"`
-	TestData             string   `json:"test_data,omitempty"`
+	TestData             string   `json:"test_data,omitempty"` //nolint:tagliatelle
 }
 
 func parseTemplateVersion(respBody string) (*TemplateVersion, error) {

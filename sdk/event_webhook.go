@@ -7,13 +7,13 @@ import (
 )
 
 // EventWebhook is a Sendgrid event webhook settings.
-type EventWebhook struct {
+type EventWebhook struct { //nolint:maligned
 	Enabled           bool   `json:"enabled"`
-	Url               string `json:"url,omitempty"`
-	GroupResubscribe  bool   `json:"group_resubscribe"`
+	URL               string `json:"url,omitempty"`
+	GroupResubscribe  bool   `json:"group_resubscribe"` //nolint:tagliatelle
 	Delivered         bool   `json:"delivered"`
-	GroupUnsubscribe  bool   `json:"group_unsubscribe"`
-	SpamReport        bool   `json:"spam_report"`
+	GroupUnsubscribe  bool   `json:"group_unsubscribe"` //nolint:tagliatelle
+	SpamReport        bool   `json:"spam_report"`       //nolint:tagliatelle
 	Bounce            bool   `json:"bounce"`
 	Deferred          bool   `json:"deferred"`
 	Unsubscribe       bool   `json:"unsubscribe"`
@@ -21,14 +21,14 @@ type EventWebhook struct {
 	Open              bool   `json:"open"`
 	Click             bool   `json:"click"`
 	Dropped           bool   `json:"dropped"`
-	OAuthClientId     string `json:"oauth_client_id,omitempty"`
-	OAuthClientSecret string `json:"oauth_client_secret,omitempty"`
-	OAuthTokenUrl     string `json:"oauth_token_url,omitempty"`
+	OAuthClientID     string `json:"oauth_client_id,omitempty"`     //nolint:tagliatelle
+	OAuthClientSecret string `json:"oauth_client_secret,omitempty"` //nolint:tagliatelle
+	OAuthTokenURL     string `json:"oauth_token_url,omitempty"`     //nolint:tagliatelle
 }
 
 type EventWebhookSigning struct {
 	Enabled   bool   `json:"enabled"`
-	PublicKey string `json:"public_key"`
+	PublicKey string `json:"public_key"` //nolint:tagliatelle
 }
 
 func parseEventWebhook(respBody string) (*EventWebhook, RequestError) {
@@ -56,17 +56,33 @@ func parseEventWebhookSigning(respBody string) (*EventWebhookSigning, RequestErr
 }
 
 // CreateEventWebhook creates an EventWebhook and returns it.
-func (c *Client) PatchEventWebhook(enabled bool, url string, groupResubscribe bool, delivered bool, groupUnsubscribe bool, spamReport bool, bounce bool, deferred bool, unsubscribe bool, processed bool, open bool, click bool, dropped bool, oauthClientId string, oauthClientSecret string, oauthTokenUrl string) (*EventWebhook, RequestError) {
+func (c *Client) PatchEventWebhook(
+	enabled bool,
+	url string,
+	groupResubscribe bool,
+	delivered bool,
+	groupUnsubscribe bool,
+	spamReport bool,
+	bounce bool,
+	deferred bool,
+	unsubscribe bool,
+	processed bool,
+	open bool,
+	click bool,
+	dropped bool,
+	oauthClientID string,
+	oauthClientSecret string,
+	oauthTokenURL string) (*EventWebhook, RequestError) {
 	if url == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        ErrUrlRequired,
+			Err:        ErrURLRequired,
 		}
 	}
 
 	respBody, statusCode, err := c.Post("PATCH", "/user/webhooks/event/settings", EventWebhook{
 		Enabled:           enabled,
-		Url:               url,
+		URL:               url,
 		GroupResubscribe:  groupResubscribe,
 		Delivered:         delivered,
 		GroupUnsubscribe:  groupUnsubscribe,
@@ -78,9 +94,9 @@ func (c *Client) PatchEventWebhook(enabled bool, url string, groupResubscribe bo
 		Open:              open,
 		Click:             click,
 		Dropped:           dropped,
-		OAuthClientId:     oauthClientId,
+		OAuthClientID:     oauthClientID,
 		OAuthClientSecret: oauthClientSecret,
-		OAuthTokenUrl:     oauthTokenUrl,
+		OAuthTokenURL:     oauthTokenURL,
 	})
 	if err != nil {
 		return nil, RequestError{
@@ -113,7 +129,6 @@ func (c *Client) ReadEventWebhook() (*EventWebhook, RequestError) {
 }
 
 func (c *Client) ConfigureEventWebhookSigning(enabled bool) (*EventWebhookSigning, RequestError) {
-
 	respBody, statusCode, err := c.Post("PATCH", "/user/webhooks/event/settings/signed", EventWebhookSigning{
 		Enabled: enabled,
 	})
@@ -136,7 +151,6 @@ func (c *Client) ConfigureEventWebhookSigning(enabled bool) (*EventWebhookSignin
 
 func (c *Client) ReadEventWebhookSigning() (*EventWebhookSigning, RequestError) {
 	respBody, _, err := c.Get("GET", "/user/webhooks/event/settings/signed")
-
 	if err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,

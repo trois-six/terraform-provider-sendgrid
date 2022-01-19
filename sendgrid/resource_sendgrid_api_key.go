@@ -20,11 +20,11 @@ package sendgrid
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
@@ -43,7 +43,7 @@ func resourceSendgridAPIKey() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The name you will use to describe this API Key.",
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 100),
+				ValidateFunc: validation.StringLenBetween(1, maxStringLength),
 			},
 			"scopes": {
 				Type:        schema.TypeSet,

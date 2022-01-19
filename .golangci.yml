@@ -23,10 +23,7 @@ linters:
     - tparallel
     - paralleltest
     - exhaustivestruct
-    - interfacer
-    - maligned
     - forcetypeassert
-
 issues:
   exclude-rules:
     - path: _test\.go
@@ -39,7 +36,5 @@ issues:
       text: "testAccProvider[s]* is a global variable"
     - path: provider_test.go
       text: "don't use `init` function"
-    - path: resource_sendgrid_template_version.go
-      text: "Function 'resourceSendgridTemplateVersion' is too long"
     - path: resource_sendgrid_api_key.go
       text: "Consider preallocating `scopes`"

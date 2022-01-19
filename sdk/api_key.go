@@ -8,8 +8,8 @@ import (
 
 // APIKey is a Sendgrid API key.
 type APIKey struct {
-	ID     string   `json:"api_key_id,omitempty"`
-	APIKey string   `json:"api_key,omitempty"`
+	ID     string   `json:"api_key_id,omitempty"` //nolint:tagliatelle
+	APIKey string   `json:"api_key,omitempty"`    //nolint:tagliatelle
 	Name   string   `json:"name,omitempty"`
 	Scopes []string `json:"scopes,omitempty"`
 }

@@ -2,7 +2,6 @@ package sendgrid
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,27 +9,27 @@ import (
 )
 
 type creditAllocation struct {
-	Type string `json:"credit_allocation,omitempty"`
+	Type string `json:"credit_allocation,omitempty"` //nolint:tagliatelle
 }
 
 // SubUser is a Sendgrid SubUser.
 type SubUser struct {
 	ID                 int              `json:"id,omitempty"`
-	UserID             int              `json:"user_id,omitempty"`
+	UserID             int              `json:"user_id,omitempty"` //nolint:tagliatelle
 	UserName           string           `json:"username,omitempty"`
 	Password           string           `json:"password,omitempty"`
-	ConfirmPassword    string           `json:"confirm_password,omitempty"`
+	ConfirmPassword    string           `json:"confirm_password,omitempty"` //nolint:tagliatelle
 	Email              string           `json:"email,omitempty"`
 	IPs                []string         `json:"ips,omitempty"`
 	Disabled           bool             `json:"disabled,omitempty"`
-	SignupSessionToken string           `json:"signup_session_token,omitempty"`
-	AuthorizationToken string           `json:"authorization_token,omitempty"`
-	CreditAllocation   creditAllocation `json:"credit_allocation,omitempty"`
+	SignupSessionToken string           `json:"signup_session_token,omitempty"` //nolint:tagliatelle
+	AuthorizationToken string           `json:"authorization_token,omitempty"`  //nolint:tagliatelle
+	CreditAllocation   creditAllocation `json:"credit_allocation,omitempty"`    //nolint:tagliatelle
 }
 
 type UpdateSubUserPassword struct {
-	NewPassword string `json:"new_password"`
-	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"` //nolint:tagliatelle
+	OldPassword string `json:"old_password"` //nolint:tagliatelle
 }
 
 func parseSubUser(respBody string) (*SubUser, RequestError) {
@@ -161,6 +160,7 @@ func (c *Client) UpdateSubuserIPs(username string, ips []string) RequestError {
 			Err:        fmt.Errorf("failed updating subUser Ips: %w", err),
 		}
 	}
+
 	return RequestError{StatusCode: http.StatusOK, Err: nil}
 }
 
@@ -190,7 +190,7 @@ func (c *Client) DeleteSubuser(username string) (bool, RequestError) {
 
 func (c *Client) UpdateSubuserPassword(username string, oldPassword string, newPassword string) RequestError {
 	if newPassword == "" {
-		return RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("new password must be non empty")}
+		return RequestError{StatusCode: http.StatusBadRequest, Err: ErrSubUserPassword}
 	}
 
 	origOnBehalfOf := c.OnBehalfOf

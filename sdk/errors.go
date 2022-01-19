@@ -72,7 +72,7 @@ var (
 
 	ErrHostnameRequired = errors.New("a hostname is required")
 
-	ErrUrlRequired = errors.New("a url is required")
+	ErrURLRequired = errors.New("a url is required")
 
 	ErrFailedPatchingEventWebhook = errors.New("failed to patch event webhook")
 
@@ -87,6 +87,9 @@ var (
 	ErrFailedDeletingLinkBranding = errors.New("failed to delete link branding")
 
 	ErrFailedCreatingLinkBranding = errors.New("failed to create link branding")
+
+	// ErrSubUserPassword should be empty.
+	ErrSubUserPassword = errors.New("new password must be non empty")
 )
 
 // RequestError struct permits to embed to return the statucode and the error to the parent function.

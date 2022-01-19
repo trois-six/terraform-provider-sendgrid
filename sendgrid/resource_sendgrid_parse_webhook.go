@@ -37,26 +37,32 @@ func resourceSendgridParseWebhook() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"hostname": {
-				Type:        schema.TypeString,
-				Description: "A specific and unique domain or subdomain that you have created to use exclusively to parse your incoming email. For example, parse.yourdomain.com.",
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				Description: "A specific and unique domain or subdomain " +
+					"that you have created to use exclusively to parse your incoming email. " +
+					"For example, parse.yourdomain.com.",
+				Required: true,
+				ForceNew: true,
 			},
 			"url": {
-				Type:        schema.TypeString,
-				Description: "The public URL where you would like SendGrid to POST the data parsed from your email. Any emails sent with the given hostname provided (whose MX records have been updated to point to SendGrid) will be parsed and POSTed to this URL.",
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				Description: "The public URL where you would like SendGrid to POST the data parsed from your email. " +
+					"Any emails sent with the given hostname provided (whose MX records have been updated to point to SendGrid) " +
+					"will be parsed and POSTed to this URL.",
+				Required: true,
+				ForceNew: true,
 			},
 			"spam_check": {
-				Type:        schema.TypeBool,
-				Description: "Indicates if you would like SendGrid to check the content parsed from your emails for spam before POSTing them to your domain.",
-				Optional:    true,
+				Type: schema.TypeBool,
+				Description: "Indicates if you would like SendGrid to check the content parsed from your emails for spam " +
+					"before POSTing them to your domain.",
+				Optional: true,
 			},
 			"send_raw": {
-				Type:        schema.TypeBool,
-				Description: "Indicates if you would like SendGrid to post the original MIME-type content of your parsed email. When this parameter is set to \"true\", SendGrid will send a JSON payload of the content of your email.",
-				Optional:    true,
+				Type: schema.TypeBool,
+				Description: "Indicates if you would like SendGrid to post the original MIME-type content of your parsed email. " +
+					"When this parameter is set to \"true\", SendGrid will send a JSON payload of the content of your email.",
+				Optional: true,
 			},
 		},
 	}
@@ -96,7 +102,7 @@ func resourceSendgridParseWebhookRead(_ context.Context, d *schema.ResourceData,
 	//nolint:errcheck
 	d.Set("hostname", webhook.Hostname)
 	//nolint:errcheck
-	d.Set("url", webhook.Url)
+	d.Set("url", webhook.URL)
 	//nolint:errcheck
 	d.Set("spam_check", webhook.SpamCheck)
 	//nolint:errcheck

@@ -39,7 +39,7 @@ import (
 // the splitted import string for template versions.
 const ImportSplitParts = 2
 
-func resourceSendgridTemplateVersion() *schema.Resource {
+func resourceSendgridTemplateVersion() *schema.Resource { //nolint:funlen
 	return &schema.Resource{
 		CreateContext: resourceSendgridTemplateVersionCreate,
 		ReadContext:   resourceSendgridTemplateVersionRead,
@@ -152,40 +152,47 @@ func resourceSendgridTemplateVersionRead(_ context.Context, d *schema.ResourceDa
 	if er := parseTemplateVersion(d, templateVersion); er != nil {
 		return diag.FromErr(er)
 	}
+
 	return nil
 }
 
 func parseTemplateVersion(d *schema.ResourceData, templateVersion *sendgrid.TemplateVersion) error {
 	if err := d.Set("updated_at", templateVersion.UpdatedAt); err != nil {
-		return err
+		return ErrSetTemplateVersionUpdatedAt
 	}
+
 	if err := d.Set("thumbnail_url", templateVersion.ThumbnailURL); err != nil {
-		return err
+		return ErrSetTemplateVersionThumbnailURL
 	}
+
 	if err := d.Set("active", templateVersion.Active); err != nil {
-		return err
+		return ErrSetTemplateVersionActive
 	}
+
 	if err := d.Set("name", templateVersion.Name); err != nil {
-		return err
+		return ErrSetTemplateVersionName
 	}
+
 	if err := d.Set("html_content", templateVersion.HTMLContent); err != nil {
-		return err
+		return ErrSetTemplateVersionHTMLContent
 	}
+
 	if err := d.Set("plain_content", templateVersion.PlainContent); err != nil {
-		return err
+		return ErrSetTemplateVersionPlainContent
 	}
+
 	if err := d.Set("generate_plain_content", templateVersion.GeneratePlainContent); err != nil {
-		return err
+		return ErrSetTemplateVersionGenPlainContent
 	}
+
 	if err := d.Set("subject", templateVersion.Subject); err != nil {
-		return err
+		return ErrSetTemplateVersionSubject
 	}
+
 	if err := d.Set("editor", templateVersion.Editor); err != nil {
-		return err
+		return ErrSetTemplateVersionEditor
 	}
-	if err := d.Set("test_data", templateVersion.TestData); err != nil {
-		return err
-	}
+
 	return nil
 }
 

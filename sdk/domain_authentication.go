@@ -6,34 +6,34 @@ import (
 	"net/http"
 )
 
-type DomainAuthenticationDns struct {
-	MailCNAME DomainAuthenticationDnsValue `json:"mail_cname,omitempty"`
-	DKIM1     DomainAuthenticationDnsValue `json:"dkim1,omitempty"`
-	DKIM2     DomainAuthenticationDnsValue `json:"dkim2,omitempty"`
+type DomainAuthenticationDNS struct {
+	MailCNAME DomainAuthenticationDNSValue `json:"mail_cname,omitempty"` //nolint:tagliatelle
+	DKIM1     DomainAuthenticationDNSValue `json:"dkim1,omitempty"`
+	DKIM2     DomainAuthenticationDNSValue `json:"dkim2,omitempty"`
 }
 
-type DomainAuthenticationDnsValue struct {
+type DomainAuthenticationDNSValue struct {
 	Valid bool   `json:"valid,omitempty"`
 	Type  string `json:"type,omitempty"`
 	Host  string `json:"host,omitempty"`
 	Data  string `json:"data,omitempty"`
 }
 
-// DomainAuthentication is a Sendgrid domain authentication
-type DomainAuthentication struct {
+// DomainAuthentication is a Sendgrid domain authentication.
+type DomainAuthentication struct { //nolint:maligned
 	ID                 int32                   `json:"id,omitempty"`
-	UserID             int32                   `json:"user_id,omitempty"`
+	UserID             int32                   `json:"user_id,omitempty"` //nolint:tagliatelle
 	Domain             string                  `json:"domain,omitempty"`
 	Subdomain          string                  `json:"subdomain,omitempty"`
 	Username           string                  `json:"username,omitempty"`
 	IPs                []string                `json:"ips,omitempty"`
-	CustomSPF          bool                    `json:"custom_spf"`
+	CustomSPF          bool                    `json:"custom_spf"` //nolint:tagliatelle
 	IsDefault          bool                    `json:"default"`
-	AutomaticSecurity  bool                    `json:"automatic_security"`
-	CustomDKIMSelector string                  `json:"custom_dkim_selector"`
+	AutomaticSecurity  bool                    `json:"automatic_security"`   //nolint:tagliatelle
+	CustomDKIMSelector string                  `json:"custom_dkim_selector"` //nolint:tagliatelle
 	Legacy             bool                    `json:"legacy,omitempty"`
 	Valid              bool                    `json:"valid,omitempty"`
-	Dns                DomainAuthenticationDns `json:"dns,omitempty"`
+	DNS                DomainAuthenticationDNS `json:"dns,omitempty"`
 }
 
 func parseDomainAuthentication(respBody string) (*DomainAuthentication, RequestError) {
@@ -49,7 +49,14 @@ func parseDomainAuthentication(respBody string) (*DomainAuthentication, RequestE
 }
 
 // CreateDomainAuthentication creates an DomainAuthentication and returns it.
-func (c *Client) CreateDomainAuthentication(domain string, subdomain string, ips []string, customSpf bool, isDefault bool, automaticSecurity bool, customDKIMSelector string) (*DomainAuthentication, RequestError) {
+func (c *Client) CreateDomainAuthentication(
+	domain string,
+	subdomain string,
+	ips []string,
+	customSpf bool,
+	isDefault bool,
+	automaticSecurity bool,
+	customDKIMSelector string) (*DomainAuthentication, RequestError) {
 	if domain == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
@@ -104,7 +111,10 @@ func (c *Client) ReadDomainAuthentication(id string) (*DomainAuthentication, Req
 }
 
 // UpdateDomainAuthentication edits an DomainAuthentication and returns it.
-func (c *Client) UpdateDomainAuthentication(id string, isDefault bool, customSPF bool) (*DomainAuthentication, RequestError) {
+func (c *Client) UpdateDomainAuthentication(
+	id string,
+	isDefault bool,
+	customSPF bool) (*DomainAuthentication, RequestError) {
 	if id == "" {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
@@ -166,7 +176,8 @@ func (c *Client) DeleteDomainAuthentication(id string) (bool, RequestError) {
 	if statusCode >= http.StatusMultipleChoices && statusCode != http.StatusNotFound { // ignore not found
 		return false, RequestError{
 			StatusCode: statusCode,
-			Err:        fmt.Errorf("%w, status: %d, response: %s", ErrFailedDeletingDomainAuthentication, statusCode, responseBody),
+			Err: fmt.Errorf("%w, status: %d, response: %s",
+				ErrFailedDeletingDomainAuthentication, statusCode, responseBody),
 		}
 	}
 

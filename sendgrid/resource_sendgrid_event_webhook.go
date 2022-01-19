@@ -32,7 +32,7 @@ import (
 	sendgrid "github.com/trois-six/terraform-provider-sendgrid/sdk"
 )
 
-func resourceSendgridEventWebhook() *schema.Resource {
+func resourceSendgridEventWebhook() *schema.Resource { //nolint:funlen
 	return &schema.Resource{
 		CreateContext: resourceSendgridEventWebhookPatch,
 		ReadContext:   resourceSendgridEventWebhookRead,
@@ -46,15 +46,18 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Required:    true,
 			},
 			"url": {
-				Type:        schema.TypeString,
-				Description: "The public URL where you would like SendGrid to POST the data events from your email. Any emails sent with the given hostname provided (whose MX records have been updated to point to SendGrid) will be eventd and POSTed to this URL.",
-				Required:    true,
+				Type: schema.TypeString,
+				Description: "The public URL where you would like SendGrid to POST the data events from your email. " +
+					"Any emails sent with the given hostname provided (whose MX records have been updated to point to SendGrid) " +
+					"will be eventd and POSTed to this URL.",
+				Required: true,
 			},
 			"group_resubscribe": {
-				Type:        schema.TypeBool,
-				Description: "Recipient resubscribes to specific group by updating preferences. You need to enable Subscription Tracking for getting this type of event.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "Recipient resubscribes to specific group by updating preferences. " +
+					"You need to enable Subscription Tracking for getting this type of event.",
+				Optional: true,
+				Default:  true,
 			},
 			"delivered": {
 				Type:        schema.TypeBool,
@@ -63,10 +66,11 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Default:     true,
 			},
 			"group_unsubscribe": {
-				Type:        schema.TypeBool,
-				Description: "Recipient unsubscribe from specific group, by either direct link or updating preferences. You need to enable Subscription Tracking for getting this type of event.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "Recipient unsubscribe from specific group, by either direct link or updating preferences. " +
+					"You need to enable Subscription Tracking for getting this type of event.",
+				Optional: true,
+				Default:  true,
 			},
 			"spam_report": {
 				Type:        schema.TypeBool,
@@ -87,10 +91,11 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Default:     true,
 			},
 			"unsubscribe": {
-				Type:        schema.TypeBool,
-				Description: "Recipient clicked on message's subscription management link. You need to enable Subscription Tracking for getting this type of event.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "Recipient clicked on message's subscription management link. " +
+					"You need to enable Subscription Tracking for getting this type of event.",
+				Optional: true,
+				Default:  true,
 			},
 			"processed": {
 				Type:        schema.TypeBool,
@@ -99,38 +104,47 @@ func resourceSendgridEventWebhook() *schema.Resource {
 				Default:     true,
 			},
 			"open": {
-				Type:        schema.TypeBool,
-				Description: "Recipient has opened the HTML message. You need to enable Open Tracking for getting this type of event.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "Recipient has opened the HTML message. " +
+					"You need to enable Open Tracking for getting this type of event.",
+				Optional: true,
+				Default:  true,
 			},
 			"click": {
-				Type:        schema.TypeBool,
-				Description: "Recipient clicked on a link within the message. You need to enable Click Tracking for getting this type of event.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "Recipient clicked on a link within the message. " +
+					"You need to enable Click Tracking for getting this type of event.",
+				Optional: true,
+				Default:  true,
 			},
 			"dropped": {
-				Type:        schema.TypeBool,
-				Description: "You may see the following drop reasons: Invalid SMTPAPI header, Spam Content (if spam checker app enabled), Unsubscribed Address, Bounced Address, Spam Reporting Address, Invalid, Recipient List over Package Quota.",
-				Optional:    true,
-				Default:     true,
+				Type: schema.TypeBool,
+				Description: "You may see the following drop reasons: " +
+					"Invalid SMTPAPI header, Spam Content (if spam checker app enabled), " +
+					"Unsubscribed Address, Bounced Address, Spam Reporting Address, Invalid, Recipient List over Package Quota.",
+				Optional: true,
+				Default:  true,
 			},
 			"oauth_client_id": {
-				Type:        schema.TypeString,
-				Description: "The client ID Twilio SendGrid sends to your OAuth server or service provider to generate an OAuth access token.",
-				Optional:    true,
+				Type: schema.TypeString,
+				Description: "The client ID Twilio SendGrid sends to your OAuth server or " +
+					"service provider to generate an OAuth access token.",
+				Optional: true,
 			},
 			"oauth_client_secret": {
-				Type:        schema.TypeString,
-				Description: "This secret is needed only once to create an access token. SendGrid will store this secret, allowing you to update your Client ID and Token URL without passing the secret to SendGrid again. When passing data in this field, you must also include the oauth_client_id and oauth_token_url fields.",
-				Optional:    true,
-				Sensitive:   true,
+				Type: schema.TypeString,
+				Description: "This secret is needed only once to create an access token. SendGrid will store this secret, " +
+					"allowing you to update your Client ID and Token URL without passing the secret to SendGrid again. " +
+					"When passing data in this field, you must also include the oauth_client_id and oauth_token_url fields.",
+				Optional:  true,
+				Sensitive: true,
 			},
 			"oauth_token_url": {
-				Type:        schema.TypeString,
-				Description: "The URL where Twilio SendGrid sends the Client ID and Client Secret to generate an access token. This should be your OAuth server or service provider. When passing data in this field, you must also include the oauth_client_id field.",
-				Optional:    true,
+				Type: schema.TypeString,
+				Description: "The URL where Twilio SendGrid sends the Client ID and Client Secret to generate an access token. " +
+					"This should be your OAuth server or service provider. " +
+					"When passing data in this field, you must also include the oauth_client_id field.",
+				Optional: true,
 			},
 			"signed": {
 				Type:        schema.TypeBool,
@@ -167,12 +181,29 @@ func resourceSendgridEventWebhookPatch(ctx context.Context, d *schema.ResourceDa
 	open := d.Get("open").(bool)
 	click := d.Get("click").(bool)
 	dropped := d.Get("dropped").(bool)
-	oauthClientId := d.Get("oauth_client_id").(string)
+	oauthClientID := d.Get("oauth_client_id").(string)
 	oauthClientSecret := d.Get("oauth_client_secret").(string)
-	oauthTokenUrl := d.Get("oauth_token_url").(string)
+	oauthTokenURL := d.Get("oauth_token_url").(string)
 
 	_, err := sendgrid.RetryOnRateLimit(ctx, d, func() (interface{}, sendgrid.RequestError) {
-		return c.PatchEventWebhook(enabled, url, groupResubscribe, delivered, groupUnsubscribe, spamReport, bounce, deferred, unsubscribe, processed, open, click, dropped, oauthClientId, oauthClientSecret, oauthTokenUrl)
+		return c.PatchEventWebhook(
+			enabled,
+			url,
+			groupResubscribe,
+			delivered,
+			groupUnsubscribe,
+			spamReport,
+			bounce,
+			deferred,
+			unsubscribe,
+			processed,
+			open,
+			click,
+			dropped,
+			oauthClientID,
+			oauthClientSecret,
+			oauthTokenURL,
+		)
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -204,7 +235,7 @@ func resourceSendgridEventWebhookRead(_ context.Context, d *schema.ResourceData,
 	//nolint:errcheck
 	d.Set("enabled", webhook.Enabled)
 	//nolint:errcheck
-	d.Set("url", webhook.Url)
+	d.Set("url", webhook.URL)
 	//nolint:errcheck
 	d.Set("group_resubscribe", webhook.GroupResubscribe)
 	//nolint:errcheck
@@ -228,9 +259,9 @@ func resourceSendgridEventWebhookRead(_ context.Context, d *schema.ResourceData,
 	//nolint:errcheck
 	d.Set("dropped", webhook.Dropped)
 	//nolint:errcheck
-	d.Set("oauth_client_id", webhook.OAuthClientId)
+	d.Set("oauth_client_id", webhook.OAuthClientID)
 	//nolint:errcheck
-	d.Set("oauth_token_url", webhook.OAuthTokenUrl)
+	d.Set("oauth_token_url", webhook.OAuthTokenURL)
 
 	webhookSigning, err := c.ReadEventWebhookSigning()
 	if err.Err != nil {
