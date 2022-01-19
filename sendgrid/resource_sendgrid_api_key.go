@@ -59,6 +59,7 @@ func resourceSendgridAPIKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The API key created by the API.",
 				Computed:    true,
+				Sensitive:   true,
 			},
 		},
 	}
