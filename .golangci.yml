@@ -24,6 +24,7 @@ linters:
     - paralleltest
     - exhaustivestruct
     - forcetypeassert
+    - varnamelen
 issues:
   exclude-rules:
     - path: _test\.go
