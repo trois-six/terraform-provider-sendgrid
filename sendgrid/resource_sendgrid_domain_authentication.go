@@ -1,5 +1,5 @@
 /*
-Provide a resource to manage an API key.
+Provide a resource to manage a domain authentication.
 Example Usage
 ```hcl
 resource "sendgrid_domain_authentication" "default" {

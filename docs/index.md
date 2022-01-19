@@ -74,9 +74,22 @@ Credentials must be provided via the `SENDGRID_API_KEY` environment variable in 
 ### API key Resource
 * [resource sendgrid_api_key](resources/api_key.md)
 
-### Subuser resource
+### Domain authentication Resource
+* [resource sendgrid_domain_authentication](resources/domain_authentication.md)
+
+### Link branding Resource
+* [resource sendgrid_link_branding](resources/link_branding.md)
+
+### Subuser Resource
 * [resource sendgrid_subuser](resources/subuser.md)
 
 ### Template Resources
 * [resource sendgrid_template](resources/template.md)
 * [resource sendgrid_template_version](resources/template_version.md)
+
+### Unsubscribe Group Resource
+* [resource sendgrid_unsubscribe_group](resources/unsubscribe_group.md)
+
+### WebHook Resources
+* [resource sendgrid_parse_webhook](resources/parse_webhook.md)
+* [resource sendgrid_event_webhook](resources/event_webhook.md)

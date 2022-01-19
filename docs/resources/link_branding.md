@@ -1,6 +1,6 @@
 # sendgrid_link_branding
 
-Provide a resource to manage an API key.
+Provide a resource to manage link branding.
 
 ## Example Usage
 

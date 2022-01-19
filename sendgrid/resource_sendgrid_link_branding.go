@@ -1,5 +1,5 @@
 /*
-Provide a resource to manage an API key.
+Provide a resource to manage link branding.
 Example Usage
 ```hcl
 resource "sendgrid_link_branding" "default" {

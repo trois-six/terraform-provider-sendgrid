@@ -1,5 +1,5 @@
 /*
-Provide a resource to manage an API key.
+Provide a resource to manage an unsubscribe group.
 Example Usage
 ```hcl
 resource "sendgrid_unsubscribe_group" "default" {
