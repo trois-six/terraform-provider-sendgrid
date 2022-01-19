@@ -31,13 +31,13 @@ The following arguments are supported:
 * `editor` - (Optional) The editor used in the UI, allowed values: code (default), design.
 * `generate_plain_content` - (Optional) If true (default), plain_content is always generated from html_content. If false, plain_content is not altered.
 * `html_content` - (Optional) The HTML content of the version, maximum of 1048576 bytes allowed.
+* `plain_content` - (Optional) Text/plain content of the transactional template version, maximum of 1048576 bytes allowed.
 * `test_data` - (Optional) For dynamic templates only, the mock json data that will be used for template preview and test sends.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `plain_content` - Text/plain content of the transactional template version, maximum of 1048576 bytes allowed.
 * `thumbnail_url` - A thumbnail preview of the template's html content.
 * `updated_at` - The date and time that this transactional template version was updated.
 

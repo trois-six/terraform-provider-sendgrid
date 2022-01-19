@@ -43,6 +43,13 @@ The following arguments are supported:
 * `oauth_token_url` - (Optional) The URL where Twilio SendGrid sends the Client ID and Client Secret to generate an access token. This should be your OAuth server or service provider. When passing data in this field, you must also include the oauth_client_id field.
 * `open` - (Optional) Recipient has opened the HTML message. You need to enable Open Tracking for getting this type of event.
 * `processed` - (Optional) Message has been received and is ready to be delivered.
+* `signed` - (Optional) Should the event webhook use signing?
 * `spam_report` - (Optional) Recipient marked a message as spam.
 * `unsubscribe` - (Optional) Recipient clicked on message's subscription management link. You need to enable Subscription Tracking for getting this type of event.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `public_key` - The public key used to sign the event webhook. Only present if 'signed' is true
 

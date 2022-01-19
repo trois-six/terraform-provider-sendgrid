@@ -16,7 +16,7 @@ resource "sendgrid_unsubscribe_group" "default" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name you will use to describe this API Key.
+* `name` - (Required) The name you will use to describe this unsubscribe group.
 * `description` - (Optional) The description of the unsubscribe group
 * `is_default` - (Optional) Should this unsubscribe group be used as the default group?
 
