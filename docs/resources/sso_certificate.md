@@ -31,12 +31,6 @@ The following arguments are supported:
 * `public_certificate` - (Required) This public certificate allows SendGrid to verify that
 					SAML requests it receives are signed by an IdP that it recognizes.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `enabled` - Indicates if the certificate is enabled.
-
 
 ## Import
 

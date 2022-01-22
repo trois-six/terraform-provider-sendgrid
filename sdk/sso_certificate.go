@@ -12,7 +12,6 @@ type SSOCertificate struct {
 	PublicCertificate string `json:"public_certificate"` //nolint:tagliatelle
 	IntegrationID     string `json:"integration_id"`     //nolint:tagliatelle
 	ID                int32  `json:"id,omitempty"`
-	Enabled           bool   `json:"enabled,omitempty"`
 }
 
 // CreateSSOCertificate creates an SSO certificate and returns it.

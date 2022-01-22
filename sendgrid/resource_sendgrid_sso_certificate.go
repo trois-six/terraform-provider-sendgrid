@@ -57,11 +57,6 @@ func resourceSendgridSSOCertificate() *schema.Resource {
 				Description: "An ID that matches an existing SSO integration.",
 				Required:    true,
 			},
-			"enabled": {
-				Type:        schema.TypeBool,
-				Description: "Indicates if the certificate is enabled.",
-				Computed:    true,
-			},
 		},
 	}
 }

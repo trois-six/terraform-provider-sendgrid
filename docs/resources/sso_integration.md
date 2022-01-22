@@ -1,6 +1,9 @@
 # sendgrid_sso_integration
 
-Provide a resource to manage SSO integrations. Note that to finalize the integration, a user must click through the 'enable integration' workflow once after supplying all required fields including an SSO certificate via `aws_sso_certificate`.
+Provide a resource to manage SSO integrations.
+
+**Note** To finalize the integration, a user must click through the 'enable integration'
+workflow once after supplying all required fields including an SSO certificate via `aws_sso_certificate`.
 
 ## Example Usage
 
