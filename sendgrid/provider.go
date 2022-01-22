@@ -77,6 +77,8 @@ func Provider() *schema.Provider {
 			"sendgrid_event_webhook":         resourceSendgridEventWebhook(),
 			"sendgrid_domain_authentication": resourceSendgridDomainAuthentication(),
 			"sendgrid_link_branding":         resourceSendgridLinkBranding(),
+			"sendgrid_sso_integration":       resourceSendgridSSOIntegration(),
+			"sendgrid_sso_certificate":       resourceSendgridSSOCertificate(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
