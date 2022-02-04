@@ -168,7 +168,7 @@ func resourceSendgridDomainAuthenticationCreate(
 	return resourceSendgridDomainAuthenticationRead(ctx, d, m)
 }
 
-func resourceSendgridDomainAuthenticationRead( //nolint:funlen
+func resourceSendgridDomainAuthenticationRead( //nolint:funlen,cyclop
 	_ context.Context,
 	d *schema.ResourceData,
 	m interface{}) diag.Diagnostics {

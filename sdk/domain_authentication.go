@@ -39,7 +39,7 @@ type DomainAuthentication struct { //nolint:maligned
 	DNS                DomainAuthenticationDNS `json:"dns,omitempty"`
 }
 
-func parseDomainAuthentication(respBody string) (*DomainAuthentication, RequestError) {
+func ParseDomainAuthentication(respBody string) (*DomainAuthentication, RequestError) {
 	var body DomainAuthentication
 	if err := json.Unmarshal([]byte(respBody), &body); err != nil {
 		return nil, RequestError{
@@ -90,7 +90,7 @@ func (c *Client) CreateDomainAuthentication(
 		}
 	}
 
-	return parseDomainAuthentication(respBody)
+	return ParseDomainAuthentication(respBody)
 }
 
 // ReadDomainAuthentication retrieves an DomainAuthentication and returns it.
@@ -110,7 +110,7 @@ func (c *Client) ReadDomainAuthentication(id string) (*DomainAuthentication, Req
 		}
 	}
 
-	return parseDomainAuthentication(respBody)
+	return ParseDomainAuthentication(respBody)
 }
 
 // UpdateDomainAuthentication edits an DomainAuthentication and returns it.
@@ -137,7 +137,7 @@ func (c *Client) UpdateDomainAuthentication(
 		}
 	}
 
-	return parseDomainAuthentication(respBody)
+	return ParseDomainAuthentication(respBody)
 }
 
 func (c *Client) ValidateDomainAuthentication(id string) RequestError {

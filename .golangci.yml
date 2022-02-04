@@ -33,6 +33,8 @@ issues:
       text: "error returned from external package is unwrapped"
     - path: _test\.go
       text: "type assertion must be checked"
+    - path: domain_authentication_test.go
+      text: "Using the variable on range scope `tt` in function literal"
     - path: provider_test.go
       text: "testAccProvider[s]* is a global variable"
     - path: provider_test.go
