@@ -80,6 +80,10 @@ Credentials must be provided via the `SENDGRID_API_KEY` environment variable in 
 ### Link branding Resource
 * [resource sendgrid_link_branding](resources/link_branding.md)
 
+### SSO Resources
+* [resource sendgrid_sso_certificate](resources/sso_certificate.md)
+* [resource sendgrid sso_integration](resources/sso_integration.md)
+
 ### Subuser Resource
 * [resource sendgrid_subuser](resources/subuser.md)
 

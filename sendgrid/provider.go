@@ -10,6 +10,10 @@ Domain authentication Resource
 Link branding Resource
   sendgrid_link_branding
 
+SSO Resources
+  sendgrid_sso_certificate
+  sendgrid sso_integration
+
 Subuser Resource
   sendgrid_subuser
 
