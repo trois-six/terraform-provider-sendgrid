@@ -231,6 +231,33 @@ func resourceSendgridDomainAuthenticationRead( //nolint:funlen
 		})
 	}
 
+	if auth.DNS.DKIM.Type != "" {
+		dns = append(dns, map[string]interface{}{
+			"type":  auth.DNS.DKIM.Type,
+			"valid": auth.DNS.DKIM.Valid,
+			"host":  auth.DNS.DKIM.Host,
+			"data":  auth.DNS.DKIM.Data,
+		})
+	}
+
+	if auth.DNS.SubDomainSPF.Type != "" {
+		dns = append(dns, map[string]interface{}{
+			"type":  auth.DNS.SubDomainSPF.Type,
+			"valid": auth.DNS.SubDomainSPF.Valid,
+			"host":  auth.DNS.SubDomainSPF.Host,
+			"data":  auth.DNS.SubDomainSPF.Data,
+		})
+	}
+
+	if auth.DNS.MailServer.Type != "" {
+		dns = append(dns, map[string]interface{}{
+			"type":  auth.DNS.MailServer.Type,
+			"valid": auth.DNS.MailServer.Valid,
+			"host":  auth.DNS.MailServer.Host,
+			"data":  auth.DNS.MailServer.Data,
+		})
+	}
+
 	if er := d.Set("dns", dns); er != nil {
 		return diag.FromErr(er)
 	}
