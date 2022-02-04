@@ -90,6 +90,24 @@ var (
 
 	// ErrSubUserPassword should be empty.
 	ErrSubUserPassword = errors.New("new password must be non empty")
+
+	// ErrSSOIntegrationMissingField error displayed when a required SSO integration field is not specified.
+	ErrSSOIntegrationMissingField = errors.New("SSO integration field is missing")
+
+	// ErrFailedCreatingSSOIntegration error displayed when an SSO integration creation request fails.
+	ErrFailedCreatingSSOIntegration = errors.New("failed to create SSO integration")
+
+	// ErrFailedUpdatingSSOIntegration error displayed when an SSO integration update request fails.
+	ErrFailedUpdatingSSOIntegration = errors.New("failed to update SSO integration")
+
+	// ErrSSOCertificateMissingField error displayed when a required SSO certificate field is not specified.
+	ErrSSOCertificateMissingField = errors.New("SSO certificate field is missing")
+
+	// ErrFailedCreatingSSOCertificate error displayed when an SSO certificate creation request fails.
+	ErrFailedCreatingSSOCertificate = errors.New("failed to create SSO certificate")
+
+	// ErrFailedUpdatingSSOCertificate error displayed when an SSO certificate update request fails.
+	ErrFailedUpdatingSSOCertificate = errors.New("failed to update SSO certificate")
 )
 
 // RequestError struct permits to embed to return the statucode and the error to the parent function.
