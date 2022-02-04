@@ -7,9 +7,12 @@ import (
 )
 
 type DomainAuthenticationDNS struct {
-	MailCNAME DomainAuthenticationDNSValue `json:"mail_cname,omitempty"` //nolint:tagliatelle
-	DKIM1     DomainAuthenticationDNSValue `json:"dkim1,omitempty"`
-	DKIM2     DomainAuthenticationDNSValue `json:"dkim2,omitempty"`
+	MailCNAME    DomainAuthenticationDNSValue `json:"mail_cname,omitempty"` //nolint:tagliatelle
+	DKIM1        DomainAuthenticationDNSValue `json:"dkim1,omitempty"`
+	DKIM2        DomainAuthenticationDNSValue `json:"dkim2,omitempty"`
+	MailServer   DomainAuthenticationDNSValue `json:"mail_server,omitempty"`   //nolint:tagliatelle
+	SubDomainSPF DomainAuthenticationDNSValue `json:"subdomain_spf,omitempty"` //nolint:tagliatelle
+	DKIM         DomainAuthenticationDNSValue `json:"dkim,omitempty"`
 }
 
 type DomainAuthenticationDNSValue struct {
@@ -76,7 +79,7 @@ func (c *Client) CreateDomainAuthentication(
 	if err != nil {
 		return nil, RequestError{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("failed creating API key: %w", err),
+			Err:        fmt.Errorf("failed creating domain authentication: %w", err),
 		}
 	}
 
