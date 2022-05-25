@@ -1,6 +1,6 @@
-# Archived repository
+# ⚠ Archived repository
 
-I have not used Sendgrid since more than one year. I don't have any ways modifications to the provider.
+I have not used Sendgrid since more than one year. I don't have any ways to test modifications to the provider.
 
 <a href="https://terraform.io">
     <img src="https://raw.githubusercontent.com/hashicorp/terraform-website/d841a1e5fca574416b5ca24306f85a0f4f41b36d/content/source/assets/images/logo-terraform-main.svg" alt="Terraform logo" title="Terraform" align="right" height="50" />
